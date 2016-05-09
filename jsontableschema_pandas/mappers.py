@@ -5,6 +5,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import json
+import math
 import numpy as np
 import pandas as pd
 
@@ -46,6 +47,26 @@ def restore_schema(data_frame):
         fields.append(field)
 
     return schema
+
+
+def pandas_dtype_to_python(value):
+    """Converts Pandas data types to python objects
+    """
+    if isinstance(value, float) and math.isnan(value):
+        return None
+    elif isinstance(value, pd.Timestamp):
+        return value.to_datetime()
+    # TODO: I guess there are more types to convert, could not find a canonical
+    #       list of scalar Pandas data types, but using following command:
+    #
+    #           [x for x in dir(pd)
+    #            if x[0].isupper() and not hasattr(getattr(pd, x), '__len__')]
+    #
+    #       I found these types:
+    #
+    #           DateOffset, NaT, Period, Timedelta, Timestamp
+    else:
+        return value
 
 
 # Private

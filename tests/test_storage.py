@@ -7,7 +7,9 @@ from __future__ import unicode_literals
 import io
 import json
 import pytest
+
 from tabulator import topen
+from jsontableschema.model import SchemaModel
 
 from jsontableschema_pandas import Storage
 
@@ -48,8 +50,8 @@ def test_storage():
     assert storage.describe('comments') == comments_schema
 
     # Get table data
-    assert list(storage.read('articles')) == articles_data
-    assert list(storage.read('comments')) == comments_data
+    assert list(storage.read('articles')) == convert_data(articles_schema, articles_data)
+    assert list(storage.read('comments')) == convert_data(comments_schema, comments_data)
 
     # Delete tables
     for table in storage.tables:
@@ -58,3 +60,8 @@ def test_storage():
     # Delete non existent table
     with pytest.raises(RuntimeError):
         storage.delete('articles')
+
+
+def convert_data(schema, data):
+    model = SchemaModel(schema)
+    return [tuple(model.convert_row(*item)) for item in data]

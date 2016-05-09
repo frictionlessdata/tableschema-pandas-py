@@ -93,9 +93,9 @@ class Storage(base.Storage):
             for field in model.fields:
                 name = field['name']
                 if name == model.primaryKey:
-                    rdata.append(pk)
+                    rdata.append(mappers.pandas_dtype_to_python(pk))
                 else:
-                    rdata.append(row[name])
+                    rdata.append(mappers.pandas_dtype_to_python(row[name]))
             yield tuple(rdata)
 
     def write(self, table, data):

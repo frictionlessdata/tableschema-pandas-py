@@ -9,22 +9,41 @@ import math
 import numpy as np
 import pandas as pd
 
-from jsontableschema.model import SchemaModel
 from jsontableschema.exceptions import InvalidObjectType
+
+
+DTYPE_TO_JTS = {
+    np.dtype('int64'): 'integer',
+}
+
+JTS_TO_DTYPE = {
+    'string': np.dtype('O'),
+    'number': np.dtype(float),
+    'integer': np.dtype(int),
+    'boolean': np.dtype(bool),
+    'null': np.dtype(None),
+    'array': np.dtype(list),
+    'object': np.dtype(dict),
+    'date': np.dtype('O'),
+    'time': np.dtype('O'),
+    'datetime': np.dtype('datetime64[ns]'),
+    'geopoint': np.dtype('O'),
+    'geojson': np.dtype('O'),
+    'any': np.dtype('O'),
+}
 
 
 # Public API
 
-def create_empty_data_frame(schema):
-    model = SchemaModel(schema)
-    columns = _get_columns(model)
-    return pd.DataFrame(columns=columns)
-
-
 def create_data_frame(model, data):
-    items = _iter_items(model, data)
+    index, data, dtypes = _get_index_and_data(model, data)
+    dtypes = _schema_to_dtypes(model, dtypes)
+    data = np.array(data, dtype=dtypes)
+    pkey = model.get_field(model.primaryKey)
+    index_dtype = JTS_TO_DTYPE[pkey['type']]
+    index = pd.Index(index, name=model.primaryKey, dtype=index_dtype)
     columns = _get_columns(model)
-    return pd.DataFrame.from_items(items, orient='index', columns=columns)
+    return pd.DataFrame(data, index=index, columns=columns)
 
 
 def restore_schema(data_frame):
@@ -79,34 +98,45 @@ def _get_columns(model):
     ]
 
 
-def _iter_items(model, data):
-    [('A', [1, 2, 3]), ('B', [4, 5, 6])]
-
-    # Process data
-    for row in data:
+def _get_index_and_data(model, rows):
+    index = []
+    data = []
+    dtypes = {}
+    for row in rows:
         pkey = None
         rdata = []
-        for index, field in enumerate(model.fields):
-            value = row[index]
+        for i, field in enumerate(model.fields):
+            value = row[i]
             try:
                 value = model.cast(field['name'], value)
             except InvalidObjectType:
                 value = json.loads(value)
+            if value is None and field['type'] in ('number', 'integer'):
+                dtypes[field['name']] = JTS_TO_DTYPE['number']
+                value = np.NaN
             if field['name'] == model.primaryKey:
                 pkey = value
             else:
                 rdata.append(value)
-        yield pkey, rdata
+        index.append(pkey)
+        data.append(tuple(rdata))
+    return index, data, dtypes
 
 
 def _convert_dtype(column, dtype):
-    mapping = {
-        np.dtype('int64'): 'integer',
-    }
-
     try:
-        return mapping[dtype]
+        return DTYPE_TO_JTS[dtype]
     except KeyError:
         raise TypeError('type "%s" of column "%s" is not supported' % (
             dtype, column
         ))
+
+
+def _schema_to_dtypes(model, overrides=None):
+    overrides = overrides or {}
+    dtypes = []
+    for index, field in enumerate(model.fields):
+        if field['name'] != model.primaryKey:
+            dtype = overrides.get(field['name'], JTS_TO_DTYPE[field['type']])
+            dtypes.append((field['name'], dtype))
+    return dtypes

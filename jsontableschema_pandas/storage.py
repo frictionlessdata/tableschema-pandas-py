@@ -32,6 +32,9 @@ class Storage(base.Storage):
     def __repr__(self):
         return 'Storage'
 
+    def __getitem__(self, key):
+        return self.__tables[key]
+
     @property
     def tables(self):
         return list(self.__tables.keys())
@@ -58,7 +61,7 @@ class Storage(base.Storage):
             self.__schemas[table] = schema
 
             # Create Pandas DataFrame
-            self.__tables[table] = mappers.create_empty_data_frame(schema)
+            self.__tables[table] = pd.DataFrame()
 
     def delete(self, table):
         tables = force_list(table, six.string_types)

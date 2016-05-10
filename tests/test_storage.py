@@ -31,9 +31,15 @@ def test_storage():
     storage.create('articles', articles_schema)
     storage.create('comments', comments_schema)
 
+    assert storage['articles'].shape == (0, 0)
+    assert storage['comments'].shape == (0, 0)
+
     # Write data to tables
     storage.write('articles', articles_data)
     storage.write('comments', comments_data)
+
+    assert storage['articles'].shape == (2, 11)
+    assert storage['comments'].shape == (1, 1)
 
     # Create existent table
     with pytest.raises(RuntimeError):

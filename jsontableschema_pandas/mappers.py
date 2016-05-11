@@ -8,13 +8,10 @@ import json
 import math
 import numpy as np
 import pandas as pd
+import pandas.core.common as pdc
 
 from jsontableschema.exceptions import InvalidObjectType
 
-
-DTYPE_TO_JTS = {
-    np.dtype('int64'): 'integer',
-}
 
 JTS_TO_DTYPE = {
     'string': np.dtype('O'),
@@ -55,14 +52,14 @@ def restore_schema(data_frame):
 
     # Primary key
     if data_frame.index.name:
-        field_type = _convert_dtype(data_frame.index.dtype)
+        field_type = _convert_dtype(data_frame.index.name, data_frame.index.dtype)
         field = {'name': data_frame.index.name, 'type': field_type}
         fields.append(field)
         schema['primaryKey'] = data_frame.index.name
 
     # Fields
     for column, dtype in data_frame.dtypes.items():
-        field_type = _convert_dtype(dtype)
+        field_type = _convert_dtype(column, dtype)
         field = {'name': column, 'type': field_type}
         if data_frame[column].isnull().sum() == 0:
             field['constraints'] = {'required': True}
@@ -127,9 +124,17 @@ def _get_index_and_data(model, rows):
 
 
 def _convert_dtype(column, dtype):
-    try:
-        return DTYPE_TO_JTS[dtype]
-    except KeyError:
+    if pdc.is_string_dtype(dtype):
+        return 'string'
+    elif pdc.is_numeric_dtype(dtype):
+        return 'number'
+    elif pdc.is_integer_dtype(dtype):
+        return 'integer'
+    elif pdc.is_bool_dtype(dtype):
+        return 'boolean'
+    elif pdc.is_datetime64_any_dtype(dtype):
+        return 'datetime'
+    else:
         raise TypeError('type "%s" of column "%s" is not supported' % (
             dtype, column
         ))

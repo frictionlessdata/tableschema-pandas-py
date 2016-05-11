@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import io
 import json
 import pytest
+import pandas as pd
 
 from tabulator import topen
 from jsontableschema.model import SchemaModel
@@ -81,6 +82,22 @@ def test_table_without_primary_key():
     storage.create('data', schema)
     storage.write('data', data)
     assert list(storage.read('data')) == data
+
+
+def test_init_tables():
+    data = [
+        (1, 'a'),
+        (2, 'b'),
+    ]
+    df = pd.DataFrame(data, columns=('key', 'value'))
+    storage = Storage(tables={'data': df})
+    assert list(storage.read('data')) == [(1, 'a'), (2, 'b')]
+    assert storage.describe('data') == {
+        'fields': [
+            {'name': 'key', 'type': 'number', 'constraints': {'required': True}},
+            {'name': 'value', 'type': 'string', 'constraints': {'required': True}},
+        ]
+    }
 
 
 def convert_data(schema, data):

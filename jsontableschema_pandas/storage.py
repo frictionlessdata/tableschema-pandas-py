@@ -22,11 +22,11 @@ class Storage(base.Storage):
 
     # Public
 
-    def __init__(self, prefix=''):
+    def __init__(self, prefix='', tables=None):
 
         # Set attributes
         self.__prefix = prefix
-        self.__tables = collections.OrderedDict()
+        self.__tables = tables or collections.OrderedDict()
         self.__schemas = {}
 
     def __repr__(self):

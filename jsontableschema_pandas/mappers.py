@@ -39,11 +39,14 @@ def create_data_frame(model, data):
     index, data, dtypes = _get_index_and_data(model, data)
     dtypes = _schema_to_dtypes(model, dtypes)
     data = np.array(data, dtype=dtypes)
-    pkey = model.get_field(model.primaryKey)
-    index_dtype = JTS_TO_DTYPE[pkey['type']]
-    index = pd.Index(index, name=model.primaryKey, dtype=index_dtype)
     columns = _get_columns(model)
-    return pd.DataFrame(data, index=index, columns=columns)
+    if model.primaryKey:
+        pkey = model.get_field(model.primaryKey)
+        index_dtype = JTS_TO_DTYPE[pkey['type']]
+        index = pd.Index(index, name=model.primaryKey, dtype=index_dtype)
+        return pd.DataFrame(data, index=index, columns=columns)
+    else:
+        return pd.DataFrame(data, columns=columns)
 
 
 def restore_schema(data_frame):

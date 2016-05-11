@@ -68,6 +68,21 @@ def test_storage():
         storage.delete('articles')
 
 
+def test_table_without_primary_key():
+    schema = {
+        'fields': [
+            {'name': 'a', 'type': 'integer'},
+            {'name': 'b', 'type': 'string'},
+        ]
+    }
+    data = [(1, 'x'), (2, 'y')]
+
+    storage = Storage()
+    storage.create('data', schema)
+    storage.write('data', data)
+    assert list(storage.read('data')) == data
+
+
 def convert_data(schema, data):
     model = SchemaModel(schema)
     return [tuple(model.convert_row(*item)) for item in data]

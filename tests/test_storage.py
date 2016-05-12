@@ -94,11 +94,51 @@ def test_init_tables():
     assert list(storage.read('data')) == [(1, 'a'), (2, 'b')]
     assert storage.describe('data') == {
         'fields': [
-            {'name': 'key', 'type': 'number', 'constraints': {'required': True}},
+            {'name': 'key', 'type': 'integer', 'constraints': {'required': True}},
             {'name': 'value', 'type': 'string', 'constraints': {'required': True}},
         ]
     }
 
+
+def test_restore_schema_with_primary_key():
+    data = [
+        ('a',),
+        ('b',),
+    ]
+    index = pd.Index([1, 2], name='key')
+    df = pd.DataFrame(data, columns=('value',), index=index)
+    storage = Storage(tables={'data': df})
+    assert list(storage.read('data')) == [(1, 'a'), (2, 'b')]
+    assert storage.describe('data') == {
+        'primaryKey': 'key',
+        'fields': [
+            {'name': 'key', 'type': 'integer', 'constraints': {'required': True}},
+            {'name': 'value', 'type': 'string', 'constraints': {'required': True}},
+        ]
+    }
+
+
+def test_read_missing_table():
+    storage = Storage()
+    with pytest.raises(RuntimeError) as excinfo:
+        list(storage.read('data'))
+    assert str(excinfo.value) == 'Table "data" doesn\'t exist.'
+
+
+def test_multiple_writes():
+    index = pd.Index([1, 2], name='key')
+    df = pd.DataFrame([('a',), ('b',)], columns=('value',), index=index)
+    storage = Storage(tables={'data': df})
+    storage.write('data', [(2, 'x'), (3, 'y')])
+    assert list(storage.read('data')) == [
+        (1, 'a'),
+        (2, 'b'),
+        (2, 'x'),
+        (3, 'y'),
+    ]
+
+
+# Helpers
 
 def convert_data(schema, data):
     model = SchemaModel(schema)

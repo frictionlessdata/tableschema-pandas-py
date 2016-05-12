@@ -54,7 +54,11 @@ def restore_schema(data_frame):
     # Primary key
     if data_frame.index.name:
         field_type = _convert_dtype(data_frame.index.name, data_frame.index.dtype)
-        field = {'name': data_frame.index.name, 'type': field_type}
+        field = {
+            'name': data_frame.index.name,
+            'type': field_type,
+            'constraints': {'required': True},
+        }
         fields.append(field)
         schema['primaryKey'] = data_frame.index.name
 
@@ -125,20 +129,16 @@ def _get_index_and_data(model, rows):
 
 
 def _convert_dtype(column, dtype):
-    if pdc.is_string_dtype(dtype):
-        return 'string'
-    elif pdc.is_numeric_dtype(dtype):
-        return 'number'
+    if pdc.is_bool_dtype(dtype):
+        return 'boolean'
     elif pdc.is_integer_dtype(dtype):
         return 'integer'
-    elif pdc.is_bool_dtype(dtype):
-        return 'boolean'
+    elif pdc.is_numeric_dtype(dtype):
+        return 'number'
     elif pdc.is_datetime64_any_dtype(dtype):
         return 'datetime'
     else:
-        raise TypeError('type "%s" of column "%s" is not supported' % (
-            dtype, column
-        ))
+        return 'string'
 
 
 def _schema_to_dtypes(model, overrides=None):
@@ -147,7 +147,7 @@ def _schema_to_dtypes(model, overrides=None):
     for index, field in enumerate(model.fields):
         if field['name'] != model.primaryKey:
             dtype = overrides.get(field['name'], JTS_TO_DTYPE[field['type']])
-            if six.PY2:
+            if six.PY2:  # pragma: no cover
                 dtypes.append((field['name'].encode('utf-8'), dtype))
             else:
                 dtypes.append((field['name'], dtype))

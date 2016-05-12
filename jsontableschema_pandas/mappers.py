@@ -4,6 +4,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import six
 import json
 import math
 import numpy as np
@@ -58,7 +59,7 @@ def restore_schema(data_frame):
         schema['primaryKey'] = data_frame.index.name
 
     # Fields
-    for column, dtype in data_frame.dtypes.items():
+    for column, dtype in data_frame.dtypes.iteritems():
         field_type = _convert_dtype(column, dtype)
         field = {'name': column, 'type': field_type}
         if data_frame[column].isnull().sum() == 0:
@@ -146,5 +147,8 @@ def _schema_to_dtypes(model, overrides=None):
     for index, field in enumerate(model.fields):
         if field['name'] != model.primaryKey:
             dtype = overrides.get(field['name'], JTS_TO_DTYPE[field['type']])
-            dtypes.append((field['name'], dtype))
+            if six.PY2:
+                dtypes.append((field['name'].encode('utf-8'), dtype))
+            else:
+                dtypes.append((field['name'], dtype))
     return dtypes

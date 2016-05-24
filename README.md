@@ -16,8 +16,7 @@ $ pip install jsontableschema-pandas
 
 ## Quick start
 
-You can easily load resources from a data package as Pandas data frames by
-simply using `datapackage.push_datapackage` function:
+You can easily load resources from a data package as Pandas data frames by simply using `datapackage.push_datapackage` function:
 
 ```python
 >>> import datapackage
@@ -51,9 +50,7 @@ Storage
 
 ## Tabular Storage
 
-Package implements
-[Tabular Storage](https://github.com/okfn/datapackage-storage-py#tabular-storage)
-interface.
+Package implements [Tabular Storage](https://github.com/okfn/datapackage-storage-py#tabular-storage) interface.
 
 We can get storage this way:
 
@@ -63,8 +60,7 @@ We can get storage this way:
 >>> storage = Storage()
 ```
 
-Storage works as a container for Pandas data frames. You can define new data
-frame inside storage using `storage.create` method:
+Storage works as a container for Pandas data frames. You can define new data frame inside storage using `storage.create` method:
 
 ```python
 >>> storage.create('data', {
@@ -94,8 +90,7 @@ id
 2        b
 ```
 
-Also you can use [tabulator](https://github.com/frictionlessdata/tabulator-py)
-to populate data frame from external data file:
+Also you can use [tabulator](https://github.com/frictionlessdata/tabulator-py) to populate data frame from external data file:
 
 ```python
 >>> import tabulator

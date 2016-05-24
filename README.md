@@ -5,6 +5,7 @@ Generate and load Pandas data frames based on JSON Table Schema descriptors.
 ## Installation
 
 ```
+$ pip install datapackage
 $ pip install jsontableschema-pandas
 ```
 

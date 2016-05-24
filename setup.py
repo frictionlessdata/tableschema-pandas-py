@@ -4,10 +4,10 @@ from __future__ import unicode_literals
 
 import io
 import os.path
-
 from setuptools import setup, find_packages
 
 
+# Helpers
 def read(*segments):
     path = os.path.join(*segments)
     with io.open(path, encoding='utf-8') as f:
@@ -23,10 +23,8 @@ INSTALL_REQUIRES = [
     'tabulator',
     'jsontableschema>=0.6',
 ]
-LINT_REQUIRES = [
-    'pylint',
-]
 TESTS_REQUIRE = [
+    'pylama',
     'tox',
 ]
 README = read('README.rst')
@@ -34,6 +32,7 @@ VERSION = read(PACKAGE, 'VERSION')
 PACKAGES = find_packages(exclude=['tests'])
 
 
+# Run
 setup(
     name=NAME,
     version=VERSION,
@@ -41,7 +40,7 @@ setup(
     include_package_data=True,
     install_requires=INSTALL_REQUIRES,
     tests_require=TESTS_REQUIRE,
-    extras_require={'develop': LINT_REQUIRES + TESTS_REQUIRE},
+    extras_require={'develop': TESTS_REQUIRE},
     zip_safe=False,
     long_description=README,
     description='Generate Pandas data frames, load and extract data, based on JSON Table Schema descriptors.',

@@ -53,7 +53,8 @@ def restore_schema(data_frame):
 
     # Primary key
     if data_frame.index.name:
-        field_type = _convert_dtype(data_frame.index.name, data_frame.index.dtype)
+        field_type = _convert_dtype(
+            data_frame.index.name, data_frame.index.dtype)
         field = {
             'name': data_frame.index.name,
             'type': field_type,

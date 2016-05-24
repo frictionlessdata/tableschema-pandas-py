@@ -10,9 +10,10 @@ import math
 import numpy as np
 import pandas as pd
 import pandas.core.common as pdc
-
 from jsontableschema.exceptions import InvalidObjectType
 
+
+# Public API
 
 JTS_TO_DTYPE = {
     'string': np.dtype('O'),
@@ -30,8 +31,6 @@ JTS_TO_DTYPE = {
     'any': np.dtype('O'),
 }
 
-
-# Public API
 
 def create_data_frame(model, data):
     index, data, dtypes = _get_index_and_data(model, data)

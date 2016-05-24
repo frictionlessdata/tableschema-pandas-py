@@ -1,5 +1,10 @@
 # jsontableschema-pandas
 
+[![Travis](https://img.shields.io/travis/frictionlessdata/jsontableschema-pandas-py/master.svg)](https://travis-ci.org/frictionlessdata/jsontableschema-pandas-py)
+[![Coveralls](http://img.shields.io/coveralls/frictionlessdata/jsontableschema-pandas-py.svg?branch=master)](https://coveralls.io/r/frictionlessdata/jsontableschema-pandas-py?branch=master)
+[![PyPi](https://img.shields.io/pypi/v/jsontableschema-pandas.svg)](https://pypi.python.org/pypi/jsontableschema-pandas)
+[![Gitter](https://img.shields.io/gitter/room/frictionlessdata/chat.svg)](https://gitter.im/frictionlessdata/chat)
+
 Generate and load Pandas data frames based on JSON Table Schema descriptors.
 
 ## Installation

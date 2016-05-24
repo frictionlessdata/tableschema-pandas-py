@@ -1,10 +1,11 @@
 sudo:
-  false
+  required
+
+dist:
+  trusty
 
 addons:
   apt:
-    sources:
-      - sourceline: 'ppa:ubuntu/pandoc'
     packages:
       - pandoc
 

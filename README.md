@@ -84,8 +84,7 @@ Use `storage.write` to populate data frame with data:
 >>> storage.write('data', [(1, 'a'), (2, 'b')])
 
 >>> storage['data']
-   comment
-id
+id comment
 1        a
 2        b
 ```
@@ -99,8 +98,7 @@ Also you can use [tabulator](https://github.com/frictionlessdata/tabulator-py) t
 ...     storage.write('data', data)
 
 >>> storage['data']
-   comment
-id
+id comment
 1        a
 2        b
 1     good

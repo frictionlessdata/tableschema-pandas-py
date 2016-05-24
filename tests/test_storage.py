@@ -8,10 +8,8 @@ import io
 import json
 import pytest
 import pandas as pd
-
 from tabulator import topen
 from jsontableschema.model import SchemaModel
-
 from jsontableschema_pandas import Storage
 
 

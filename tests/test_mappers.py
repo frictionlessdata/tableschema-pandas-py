@@ -1,6 +1,11 @@
+# -*- coding: utf-8 -*-
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import datetime
 import pandas as pd
-
 from jsontableschema_pandas.mappers import _convert_dtype
 
 

@@ -10,9 +10,10 @@ import math
 import numpy as np
 import pandas as pd
 import pandas.core.common as pdc
-
 from jsontableschema.exceptions import InvalidObjectType
 
+
+# Public API
 
 JTS_TO_DTYPE = {
     'string': np.dtype('O'),
@@ -30,8 +31,6 @@ JTS_TO_DTYPE = {
     'any': np.dtype('O'),
 }
 
-
-# Public API
 
 def create_data_frame(model, data):
     index, data, dtypes = _get_index_and_data(model, data)
@@ -53,7 +52,8 @@ def restore_schema(data_frame):
 
     # Primary key
     if data_frame.index.name:
-        field_type = _convert_dtype(data_frame.index.name, data_frame.index.dtype)
+        field_type = _convert_dtype(
+            data_frame.index.name, data_frame.index.dtype)
         field = {
             'name': data_frame.index.name,
             'type': field_type,

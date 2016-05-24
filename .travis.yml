@@ -1,0 +1,45 @@
+sudo:
+  false
+
+addons:
+  apt:
+    sources:
+      - sourceline: 'ppa:pandoc'
+    packages:
+      - pandoc
+
+language:
+  python
+
+python:
+  - 2.7
+  - 3.3
+  - 3.4
+  - 3.5
+
+env:
+  global:
+    - TOXENV="py${PYTHON_VERSION//./}"
+
+install:
+  - make install
+  - pip install coveralls
+
+script:
+  - make test
+
+after_success:
+  - coveralls
+
+before_deploy:
+  - pandoc -f markdown_github -t rst -o README.rst README.md
+  - mv README.rst README.md
+
+deploy:
+  provider: pypi
+  user: okfn
+  distributions: sdist bdist_wheel
+  on:
+    tags: true
+  password:
+    secure: GT+sPASLTvEUBdl/LybxjxH7kXIrXLI5R5a3J3hrhp5B07wzJgluGh5ERPdK+vYlwpKAZpgjiFo5hPHBFm8v4AEw9iGZmCiLVahGohNwgV5Ael7drAZiwNOBZmFNiOv+WQwvz/eQ+v4SC5lQXkkNBizDuVZrfUadvAZORQXjqnx2UV6fVbfJ+81CDBY20UbLgnkdEuyQPtBvQ4A+ETTWxWwvP6beRzGkUYKTDXbHV3HMbI9nkQlPpI3N4UXPddOjEdqCOpYNvMNR6HBbLtCNZfEBWl9G2d4dZ0yILgYU3Rqym9j33MRdWUXVjoV3rNVxauposH6o3scPKAudDSel4v3t7u5ENqQcptNBabTBFyTOx7/7EQ/FtrWxhSWip87kB2cn40i8jIkEwAoLa3dxDiXswIEkDqEWZ4vRlhXEmT+zzC2S7o4hUrPuFl+6iDZUDc5OKJ3EeAouLM//tNwEHn7ObxZrKJLoqmP6F2y0sAqtKu+pbIoO9m/PmDA8An3KcO+dvCSw917foiDJrJjkaAiBBA82GlG8L6Uy4MZIoad6BAt+gZ9BUtycKnVKb9CIsFdFUNvZLVgUOPSnx7OpvuZVnf3WohJ4EvaMQzS2ql1RVpU4JI/A5heKdOfQMpdtciWcU/wbUW5IVzl2n9sLlm/6z3jXoJBJRKEMy8gvzzU=

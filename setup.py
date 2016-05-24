@@ -27,7 +27,7 @@ TESTS_REQUIRE = [
     'pylama',
     'tox',
 ]
-README = read('README.rst')
+README = read('README.md')
 VERSION = read(PACKAGE, 'VERSION')
 PACKAGES = find_packages(exclude=['tests'])
 

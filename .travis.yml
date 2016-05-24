@@ -4,7 +4,7 @@ sudo:
 addons:
   apt:
     sources:
-      - sourceline: 'ppa:pandoc'
+      - sourceline: 'ppa:ubuntu/pandoc'
     packages:
       - pandoc
 
@@ -32,6 +32,7 @@ after_success:
   - coveralls
 
 before_deploy:
+  - pandoc --version
   - pandoc -f markdown_github -t rst -o README.rst README.md
   - mv README.rst README.md
 

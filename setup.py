@@ -21,7 +21,7 @@ INSTALL_REQUIRES = [
     'six',
     'pandas',
     'tabulator',
-    'jsontableschema==0.6.0',
+    'jsontableschema>=0.6',
 ]
 LINT_REQUIRES = [
     'pylint',

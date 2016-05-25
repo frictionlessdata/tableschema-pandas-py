@@ -50,7 +50,7 @@ Storage
 
 ## Tabular Storage
 
-Package implements [Tabular Storage](https://github.com/okfn/datapackage-storage-py#tabular-storage) interface.
+Package implements [Tabular Storage](https://github.com/frictionlessdata/jsontableschema-py#storage) interface.
 
 We can get storage this way:
 

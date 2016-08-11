@@ -20,7 +20,6 @@ JTS_TO_DTYPE = {
     'number': np.dtype(float),
     'integer': np.dtype(int),
     'boolean': np.dtype(bool),
-    'null': np.dtype(None),
     'array': np.dtype(list),
     'object': np.dtype(dict),
     'date': np.dtype('O'),

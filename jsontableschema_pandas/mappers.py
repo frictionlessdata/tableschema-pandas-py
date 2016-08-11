@@ -39,8 +39,13 @@ def create_data_frame(model, data):
     columns = _get_columns(model)
     if model.primaryKey:
         pkey = model.get_field(model.primaryKey)
-        index_dtype = JTS_TO_DTYPE[pkey['type']]
-        index = pd.Index(index, name=model.primaryKey, dtype=index_dtype)
+        pkey_type = pkey['type']
+        index_dtype = JTS_TO_DTYPE[pkey_type]
+        if pkey_type == 'datetime':
+            index = pd.DatetimeIndex(index,
+                                     name=model.primaryKey, dtype=index_dtype)
+        else:
+            index = pd.Index(index, name=model.primaryKey, dtype=index_dtype)
         return pd.DataFrame(data, index=index, columns=columns)
     else:
         return pd.DataFrame(data, columns=columns)

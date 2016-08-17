@@ -40,7 +40,7 @@ def create_data_frame(model, data):
         pkey = model.get_field(model.primaryKey)
         pkey_type = pkey['type']
         index_dtype = JTS_TO_DTYPE[pkey_type]
-        if pkey_type == 'datetime':
+        if pkey_type in ['datetime', 'date']:
             index = pd.DatetimeIndex(index,
                                      name=model.primaryKey, dtype=index_dtype)
         else:

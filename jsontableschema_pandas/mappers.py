@@ -31,20 +31,20 @@ JTS_TO_DTYPE = {
 }
 
 
-def create_data_frame(model, data):
-    index, data, dtypes = _get_index_and_data(model, data)
-    dtypes = _schema_to_dtypes(model, dtypes)
+def create_data_frame(schema, data):
+    index, data, dtypes = _get_index_and_data(schema, data)
+    dtypes = _schema_to_dtypes(schema, dtypes)
     data = np.array(data, dtype=dtypes)
-    columns = _get_columns(model)
-    if model.primaryKey:
-        pkey = model.get_field(model.primaryKey)
-        pkey_type = pkey['type']
+    columns = _get_columns(schema)
+    if schema.primaryKey:
+        pkey = schema.get_field(schema.primaryKey[0])
+        pkey_type = pkey.type
         index_dtype = JTS_TO_DTYPE[pkey_type]
         if pkey_type in ['datetime', 'date']:
-            index = pd.DatetimeIndex(index,
-                                     name=model.primaryKey, dtype=index_dtype)
+            index = pd.DatetimeIndex(
+                index, name=schema.primaryKey[0], dtype=index_dtype)
         else:
-            index = pd.Index(index, name=model.primaryKey, dtype=index_dtype)
+            index = pd.Index(index, name=schema.primaryKey[0], dtype=index_dtype)
         return pd.DataFrame(data, index=index, columns=columns)
     else:
         return pd.DataFrame(data, columns=columns)
@@ -99,31 +99,31 @@ def pandas_dtype_to_python(value):
 
 # Private
 
-def _get_columns(model):
+def _get_columns(schema):
     return [
-        field['name']
-        for field in model.fields
-        if model.primaryKey != field['name']
+        field.name
+        for field in schema.fields
+        if schema.primaryKey and schema.primaryKey[0] != field.name
     ]
 
 
-def _get_index_and_data(model, rows):
+def _get_index_and_data(schema, rows):
     index = []
     data = []
     dtypes = {}
     for row in rows:
         pkey = None
         rdata = []
-        for i, field in enumerate(model.fields):
+        for i, field in enumerate(schema.fields):
             value = row[i]
             try:
-                value = model.cast(field['name'], value)
+                value = field.cast_value(value)
             except InvalidObjectType:
                 value = json.loads(value)
             if value is None and field['type'] in ('number', 'integer'):
                 dtypes[field['name']] = JTS_TO_DTYPE['number']
                 value = np.NaN
-            if field['name'] == model.primaryKey:
+            if schema.primaryKey and schema.primaryKey[0] == field.name:
                 pkey = value
             else:
                 rdata.append(value)
@@ -145,14 +145,14 @@ def _convert_dtype(column, dtype):
         return 'string'
 
 
-def _schema_to_dtypes(model, overrides=None):
+def _schema_to_dtypes(schema, overrides=None):
     overrides = overrides or {}
     dtypes = []
-    for index, field in enumerate(model.fields):
-        if field['name'] != model.primaryKey:
-            dtype = overrides.get(field['name'], JTS_TO_DTYPE[field['type']])
+    for index, field in enumerate(schema.fields):
+        if not schema.primaryKey or schema.primaryKey != field.name:
+            dtype = overrides.get(field.name, JTS_TO_DTYPE[field.type])
             if six.PY2:  # pragma: no cover
-                dtypes.append((field['name'].encode('utf-8'), dtype))
+                dtypes.append((field.name.encode('utf-8'), dtype))
             else:
-                dtypes.append((field['name'], dtype))
+                dtypes.append((field.name, dtype))
     return dtypes

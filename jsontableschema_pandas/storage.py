@@ -7,113 +7,140 @@ from __future__ import unicode_literals
 import six
 import collections
 import pandas as pd
-
 import jsontableschema
-from jsontableschema import storage as base
-from jsontableschema.model import SchemaModel
-
-from . import mappers
+from jsontableschema import Schema
 from .utils import force_list
+from . import mappers
 
 
 # Module API
 
-class Storage(base.Storage):
+class Storage(object):
+    """Pandas Tabular Storage.
+
+    It's an implementation of `jsontablescema.Storage`.
+
+    Args:
+        dataframes (list): list of storage dataframes
+        prefix (str): prefix for all buckets
+
+    """
 
     # Public
 
-    def __init__(self, prefix='', tables=None):
+    def __init__(self, dataframes=None, prefix=''):
 
         # Set attributes
         self.__prefix = prefix
-        self.__tables = tables or collections.OrderedDict()
-        self.__schemas = {}
+        self.__dataframes = dataframes or collections.OrderedDict()
+        self.__descriptors = {}
 
     def __repr__(self):
         return 'Storage'
 
     def __getitem__(self, key):
-        return self.__tables[key]
+        return self.__dataframes[key]
 
     @property
-    def tables(self):
-        return list(self.__tables.keys())
+    def buckets(self):
+        return list(self.__dataframes.keys())
 
-    def check(self, table):
-        return table in self.__tables
+    def create(self, bucket, descriptor, force=False):
 
-    def create(self, table, schema):
         # Make lists
-        tables = force_list(table, six.string_types)
-        schemas = force_list(schema, dict)
-        assert len(tables) == len(schemas)
+        buckets = force_list(bucket, six.string_types)
+        descriptors = force_list(descriptor, dict)
+        assert len(buckets) == len(descriptors)
 
-        # Check tables for existence
-        for table in tables:
-            if self.check(table):
-                raise RuntimeError('Table "%s" already exists.' % table)
+        # Check buckets for existence
+        for bucket in buckets:
+            if bucket in self.buckets:
+                if not force:
+                    raise RuntimeError('Bucket "%s" already exists' % bucket)
+                self.delete(bucket)
 
-        # Define tables
-        for table, schema in zip(tables, schemas):
+        # Define dataframes
+        for bucket, descriptor in zip(buckets, descriptors):
+            jsontableschema.validate(descriptors)
+            self.__descriptors[bucket] = descriptor
+            self.__dataframes[table] = pd.DataFrame()
 
-            # Add to schemas
-            jsontableschema.validate(schema)
-            self.__schemas[table] = schema
+    def delete(self, bucket, ignore=False):
 
-            # Create Pandas DataFrame
-            self.__tables[table] = pd.DataFrame()
+        # Make list
+        buckets = force_list(bucket, six.string_types)
 
-    def delete(self, table):
-        tables = force_list(table, six.string_types)
-        for table in tables:
-            # Check existent
-            if not self.check(table):
-                raise RuntimeError('Table "%s" doesn\'t exist.' % table)
+        for bucket in buckets:
 
-            # Remove from schemas
-            if table in self.__schemas:
-                del self.__schemas[table]
+            # Non existent bucket
+            if not bucket in self.buckets:
+                if not ignore:
+                    raise RuntimeError('Table "%s" doesn\'t exist' % table)
 
-            # Remove from tables
-            if table in self.__tables:
-                del self.__tables[table]
+            # Remove from descriptors
+            if bucket in self.__descriptors:
+                del self.__descriptors[bucket]
 
-    def describe(self, table):
-        if table in self.__schemas:
-            return self.__schemas[table]
+            # Remove from dataframes
+            if bucket in self.__dataframes:
+                del self.__dataframes[bucket]
+
+    def describe(self, bucket, descriptor=None):
+
+        # Set descriptor
+        if descriptor is None:
+            self.__descriptors[bucket] = descriptor
+
+        # Get descriptor
         else:
-            return mappers.restore_schema(self.__tables[table])
+            descriptor = self.__descriptors.get(bucket)
+            if descriptor is None:
+                descriptor = mappers.restore_schema(self.__dataframes[bucket])
 
-    def read(self, table):
-        if not self.check(table):
+        return descriptor
+
+    def iter(self, bucket):
+
+        # Check existense
+        if bucket in self.buckets:
             raise RuntimeError('Table "%s" doesn\'t exist.' % table)
 
-        schema = self.describe(table)
-        model = SchemaModel(schema)
+        # Prepare
+        descriptor = self.describe(bucket)
+        schema = Schema(descriptor)
 
-        for pk, row in self.__tables[table].iterrows():
+        # Yield rows
+        for pk, row in self.__dataframes[bucket].iterrows():
             rdata = []
-            for field in model.fields:
-                name = field['name']
-                if name == model.primaryKey:
+            for field in schema.fields:
+                if schema.primaryKey and schema.primaryKey[0] == field.name:
                     rdata.append(mappers.pandas_dtype_to_python(pk))
                 else:
-                    rdata.append(mappers.pandas_dtype_to_python(row[name]))
-            yield tuple(rdata)
+                    rdata.append(mappers.pandas_dtype_to_python(row[field.name]))
+            yield rdata
 
-    def write(self, table, data):
-        schema = self.describe(table)
-        model = SchemaModel(schema)
-        new_data_frame = mappers.create_data_frame(model, data)
+    def read(self, bucket):
 
-        # Just return new DataFrame if current is empty
-        if self.__tables[table].size == 0:
-            self.__tables[table] = new_data_frame
+        # Get rows
+        rows = list(self.iter(bucket))
+
+        return rows
+
+    def write(self, bucket, rows):
+
+        # Prepare
+        descriptor = self.describe(bucket)
+        schema = Schema(descriptor)
+        new_data_frame = mappers.create_data_frame(schema, rows)
+
+        # Just set new DataFrame if current is empty
+        if self.__dataframes[bucket].size == 0:
+            self.__dataframes[bucket] = new_data_frame
 
         # Append new data frame to the old one returning new data frame
         # containing data from both old and new data frames
         else:
-            self.__tables[table] = pd.concat([
-                self.__tables[table],
-                new_data_frame
+            self.__dataframes[bucket] = pd.concat([
+                self.__dataframes[bucket],
+                new_data_frame,
             ])

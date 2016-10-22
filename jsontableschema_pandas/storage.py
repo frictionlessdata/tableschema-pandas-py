@@ -63,7 +63,7 @@ class Storage(object):
         for bucket, descriptor in zip(buckets, descriptors):
             jsontableschema.validate(descriptors)
             self.__descriptors[bucket] = descriptor
-            self.__dataframes[table] = pd.DataFrame()
+            self.__dataframes[bucket] = pd.DataFrame()
 
     def delete(self, bucket, ignore=False):
 
@@ -73,9 +73,9 @@ class Storage(object):
         for bucket in buckets:
 
             # Non existent bucket
-            if not bucket in self.buckets:
+            if bucket not in self.buckets:
                 if not ignore:
-                    raise RuntimeError('Table "%s" doesn\'t exist' % table)
+                    raise RuntimeError('Bucket "%s" doesn\'t exist' % bucket)
 
             # Remove from descriptors
             if bucket in self.__descriptors:
@@ -103,7 +103,7 @@ class Storage(object):
 
         # Check existense
         if bucket in self.buckets:
-            raise RuntimeError('Table "%s" doesn\'t exist.' % table)
+            raise RuntimeError('Bucket "%s" doesn\'t exist.' % bucket)
 
         # Prepare
         descriptor = self.describe(bucket)
@@ -116,7 +116,8 @@ class Storage(object):
                 if schema.primaryKey and schema.primaryKey[0] == field.name:
                     rdata.append(mappers.pandas_dtype_to_python(pk))
                 else:
-                    rdata.append(mappers.pandas_dtype_to_python(row[field.name]))
+                    value = row[field.name]
+                    rdata.append(mappers.pandas_dtype_to_python(value))
             yield rdata
 
     def read(self, bucket):

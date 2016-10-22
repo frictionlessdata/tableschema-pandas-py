@@ -8,8 +8,8 @@ import io
 import json
 import pytest
 import pandas as pd
-from tabulator import topen
-from jsontableschema.model import SchemaModel
+from tabulator import Stream
+from jsontableschema import Schema
 from jsontableschema_pandas import Storage
 
 
@@ -18,31 +18,31 @@ from jsontableschema_pandas import Storage
 def test_storage():
 
     # Get resources
-    articles_schema = json.load(io.open('data/articles.json', encoding='utf-8'))
-    comments_schema = json.load(io.open('data/comments.json', encoding='utf-8'))
-    articles_data = topen('data/articles.csv', with_headers=True).read()
-    comments_data = topen('data/comments.csv', with_headers=True).read()
+    articles_descriptor = json.load(io.open('data/articles.json', encoding='utf-8'))
+    comments_descriptor = json.load(io.open('data/comments.json', encoding='utf-8'))
+    articles_rows = topen('data/articles.csv', headers=1).open().read()
+    comments_rows = topen('data/comments.csv', headers=1).open().read()
 
     # Storage
     storage = Storage()
 
     # Create tables
-    storage.create('articles', articles_schema)
-    storage.create('comments', comments_schema)
+    storage.create('articles', articles_descriptor)
+    storage.create('comments', comments_descriptor)
 
     assert storage['articles'].shape == (0, 0)
     assert storage['comments'].shape == (0, 0)
 
     # Write data to tables
-    storage.write('articles', articles_data)
-    storage.write('comments', comments_data)
+    storage.write('articles', articles_rows)
+    storage.write('comments', comments_rows)
 
     assert storage['articles'].shape == (2, 11)
     assert storage['comments'].shape == (1, 1)
 
     # Create existent table
     with pytest.raises(RuntimeError):
-        storage.create('articles', articles_schema)
+        storage.create('articles', articles_descriptor)
 
     # Get table representation
     assert repr(storage).startswith('Storage')
@@ -51,12 +51,12 @@ def test_storage():
     assert storage.tables == ['articles', 'comments']
 
     # Get table schemas (takes schemas from cache)
-    assert storage.describe('articles') == articles_schema
-    assert storage.describe('comments') == comments_schema
+    assert storage.describe('articles') == articles_descriptor
+    assert storage.describe('comments') == comments_descriptor
 
     # Get table data
-    assert list(storage.read('articles')) == convert_data(articles_schema, articles_data)
-    assert list(storage.read('comments')) == convert_data(comments_schema, comments_data)
+    assert list(storage.read('articles')) == convert_data(articles_descriptor, articles_rows)
+    assert list(storage.read('comments')) == convert_data(comments_descriptor, comments_rows)
 
     # Delete tables
     for table in storage.tables:

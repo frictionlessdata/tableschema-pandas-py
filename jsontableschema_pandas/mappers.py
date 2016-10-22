@@ -44,7 +44,8 @@ def create_data_frame(schema, data):
             index = pd.DatetimeIndex(
                 index, name=schema.primaryKey[0], dtype=index_dtype)
         else:
-            index = pd.Index(index, name=schema.primaryKey[0], dtype=index_dtype)
+            index = pd.Index(
+                index, name=schema.primaryKey[0], dtype=index_dtype)
         return pd.DataFrame(data, index=index, columns=columns)
     else:
         return pd.DataFrame(data, columns=columns)

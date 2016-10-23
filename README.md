@@ -9,6 +9,8 @@
 Generate and load Pandas data frames based on JSON Table Schema descriptors.
 
 > Version `v0.2` contains breaking changes:
+- removed `Storage(prefix=)` argument (was a stub)
+- renamed `Storage(tables=)` to `Storage(dataframes=)`
 - renamed `Storage.tables` to `Storage.buckets`
 - changed `Storage.read` to read into memory
 - added `Storage.iter` to yield row by row

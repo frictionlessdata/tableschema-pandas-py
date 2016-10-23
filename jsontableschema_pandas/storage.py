@@ -9,7 +9,6 @@ import collections
 import pandas as pd
 import jsontableschema
 from jsontableschema import Schema
-from .utils import force_list
 from . import mappers
 
 
@@ -22,16 +21,12 @@ class Storage(object):
 
     Args:
         dataframes (list): list of storage dataframes
-        prefix (str): prefix for all buckets
 
     """
 
     # Public
 
-    def __init__(self, dataframes=None, prefix=''):
-
-        # Set attributes
-        self.__prefix = prefix
+    def __init__(self, dataframes=None):
         self.__dataframes = dataframes or collections.OrderedDict()
         self.__descriptors = {}
 
@@ -48,9 +43,12 @@ class Storage(object):
     def create(self, bucket, descriptor, force=False):
 
         # Make lists
-        buckets = force_list(bucket, six.string_types)
-        descriptors = force_list(descriptor, dict)
-        assert len(buckets) == len(descriptors)
+        buckets = bucket
+        if isinstance(bucket, six.string_types):
+            buckets = [bucket]
+        descriptors = descriptor
+        if isinstance(descriptor, dict):
+            descriptors = [descriptor]
 
         # Check buckets for existence
         for bucket in buckets:
@@ -61,15 +59,20 @@ class Storage(object):
 
         # Define dataframes
         for bucket, descriptor in zip(buckets, descriptors):
-            jsontableschema.validate(descriptors)
+            jsontableschema.validate(descriptor)
             self.__descriptors[bucket] = descriptor
             self.__dataframes[bucket] = pd.DataFrame()
 
-    def delete(self, bucket, ignore=False):
+    def delete(self, bucket=None, ignore=False):
 
-        # Make list
-        buckets = force_list(bucket, six.string_types)
+        # Make lists
+        buckets = bucket
+        if isinstance(bucket, six.string_types):
+            buckets = [bucket]
+        elif bucket is None:
+            buckets = reversed(self.buckets)
 
+        # Iterate over buckets
         for bucket in buckets:
 
             # Non existent bucket
@@ -88,21 +91,22 @@ class Storage(object):
     def describe(self, bucket, descriptor=None):
 
         # Set descriptor
-        if descriptor is None:
+        if descriptor is not None:
             self.__descriptors[bucket] = descriptor
 
         # Get descriptor
         else:
             descriptor = self.__descriptors.get(bucket)
             if descriptor is None:
-                descriptor = mappers.restore_schema(self.__dataframes[bucket])
+                dataframe = self.__dataframes[bucket]
+                descriptor = mappers.dataframe_to_descriptor(dataframe)
 
         return descriptor
 
     def iter(self, bucket):
 
         # Check existense
-        if bucket in self.buckets:
+        if bucket not in self.buckets:
             raise RuntimeError('Bucket "%s" doesn\'t exist.' % bucket)
 
         # Prepare
@@ -113,11 +117,11 @@ class Storage(object):
         for pk, row in self.__dataframes[bucket].iterrows():
             rdata = []
             for field in schema.fields:
-                if schema.primaryKey and schema.primaryKey[0] == field.name:
-                    rdata.append(mappers.pandas_dtype_to_python(pk))
+                if schema.primary_key and schema.primary_key[0] == field.name:
+                    rdata.append(mappers.dvalue_to_jtsvalue(pk))
                 else:
                     value = row[field.name]
-                    rdata.append(mappers.pandas_dtype_to_python(value))
+                    rdata.append(mappers.dvalue_to_jtsvalue(value))
             yield rdata
 
     def read(self, bucket):
@@ -131,14 +135,13 @@ class Storage(object):
 
         # Prepare
         descriptor = self.describe(bucket)
-        schema = Schema(descriptor)
-        new_data_frame = mappers.create_data_frame(schema, rows)
+        new_data_frame = mappers.descriptor_and_rows_to_dataframe(descriptor, rows)
 
         # Just set new DataFrame if current is empty
         if self.__dataframes[bucket].size == 0:
             self.__dataframes[bucket] = new_data_frame
 
-        # Append new data frame to the old one returning new data frame
+        # Append new data frame to the old one setting new data frame
         # containing data from both old and new data frames
         else:
             self.__dataframes[bucket] = pd.concat([

@@ -20,8 +20,8 @@ def test_storage():
     # Get resources
     articles_descriptor = json.load(io.open('data/articles.json', encoding='utf-8'))
     comments_descriptor = json.load(io.open('data/comments.json', encoding='utf-8'))
-    articles_rows = topen('data/articles.csv', headers=1).open().read()
-    comments_rows = topen('data/comments.csv', headers=1).open().read()
+    articles_rows = Stream('data/articles.csv', headers=1).open().read()
+    comments_rows = Stream('data/comments.csv', headers=1).open().read()
 
     # Storage
     storage = Storage()
@@ -48,19 +48,19 @@ def test_storage():
     assert repr(storage).startswith('Storage')
 
     # Get tables list
-    assert storage.tables == ['articles', 'comments']
+    assert storage.buckets == ['articles', 'comments']
 
     # Get table schemas (takes schemas from cache)
     assert storage.describe('articles') == articles_descriptor
     assert storage.describe('comments') == comments_descriptor
 
     # Get table data
-    assert list(storage.read('articles')) == convert_data(articles_descriptor, articles_rows)
-    assert list(storage.read('comments')) == convert_data(comments_descriptor, comments_rows)
+    assert list(storage.read('articles')) == sync_rows(articles_descriptor, articles_rows)
+    assert list(storage.read('comments')) == sync_rows(comments_descriptor, comments_rows)
 
     # Delete tables
-    for table in storage.tables:
-        storage.delete(table)
+    for bucket in storage.buckets:
+        storage.delete(bucket)
 
     # Delete non existent table
     with pytest.raises(RuntimeError):
@@ -74,7 +74,7 @@ def test_table_without_primary_key():
             {'name': 'b', 'type': 'string'},
         ]
     }
-    data = [(1, 'x'), (2, 'y')]
+    data = [[1, 'x'], [2, 'y']]
 
     storage = Storage()
     storage.create('data', schema)
@@ -88,8 +88,8 @@ def test_init_tables():
         (2, 'b'),
     ]
     df = pd.DataFrame(data, columns=('key', 'value'))
-    storage = Storage(tables={'data': df})
-    assert list(storage.read('data')) == [(1, 'a'), (2, 'b')]
+    storage = Storage(dataframes={'data': df})
+    assert list(storage.read('data')) == [[1, 'a'], [2, 'b']]
     assert storage.describe('data') == {
         'fields': [
             {'name': 'key', 'type': 'integer', 'constraints': {'required': True}},
@@ -105,8 +105,8 @@ def test_restore_schema_with_primary_key():
     ]
     index = pd.Index([1, 2], name='key')
     df = pd.DataFrame(data, columns=('value',), index=index)
-    storage = Storage(tables={'data': df})
-    assert list(storage.read('data')) == [(1, 'a'), (2, 'b')]
+    storage = Storage(dataframes={'data': df})
+    assert list(storage.read('data')) == [[1, 'a'], [2, 'b']]
     assert storage.describe('data') == {
         'primaryKey': 'key',
         'fields': [
@@ -120,24 +120,27 @@ def test_read_missing_table():
     storage = Storage()
     with pytest.raises(RuntimeError) as excinfo:
         list(storage.read('data'))
-    assert str(excinfo.value) == 'Table "data" doesn\'t exist.'
+    assert str(excinfo.value) == 'Bucket "data" doesn\'t exist.'
 
 
 def test_multiple_writes():
     index = pd.Index([1, 2], name='key')
     df = pd.DataFrame([('a',), ('b',)], columns=('value',), index=index)
-    storage = Storage(tables={'data': df})
+    storage = Storage(dataframes={'data': df})
     storage.write('data', [(2, 'x'), (3, 'y')])
     assert list(storage.read('data')) == [
-        (1, 'a'),
-        (2, 'b'),
-        (2, 'x'),
-        (3, 'y'),
+        [1, 'a'],
+        [2, 'b'],
+        [2, 'x'],
+        [3, 'y'],
     ]
 
 
 # Helpers
 
-def convert_data(schema, data):
-    model = SchemaModel(schema)
-    return [tuple(model.convert_row(*item)) for item in data]
+def sync_rows(descriptor, rows):
+    result = []
+    schema = Schema(descriptor)
+    for row in rows:
+        result.append(schema.cast_row(row))
+    return result

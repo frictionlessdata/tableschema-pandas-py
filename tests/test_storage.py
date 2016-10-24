@@ -60,6 +60,12 @@ def test_storage():
     assert list(storage.read('articles')) == sync_rows(articles_descriptor, articles_rows)
     assert list(storage.read('comments')) == sync_rows(comments_descriptor, comments_rows)
 
+    # Describe bucket
+    storage.describe('articles', articles_descriptor)
+
+    # Assert descriptor
+    assert storage.describe('articles') == articles_descriptor
+
     # Delete buckets
     storage.delete()
 

@@ -42,6 +42,12 @@ def test_descriptor_and_rows_to_dataframe_with_datetime_index():
     assert isinstance(df_new.index, pd.DatetimeIndex)
 
 
+def test_descriptor_and_rows_to_dataframe_composite_primary_key_not_supported():
+    descriptor = {'fields': [{'name': 'a'}, {'name': 'b'}], 'primaryKey': ['a', 'b']}
+    with pytest.raises(RuntimeError):
+        mappers.descriptor_and_rows_to_dataframe(descriptor, [])
+
+
 def test_jtstype_to_dtype():
     assert mappers.jtstype_to_dtype('string') == np.dtype('O')
     with pytest.raises(TypeError):

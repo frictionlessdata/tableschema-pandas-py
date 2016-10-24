@@ -26,43 +26,44 @@ def test_storage():
     # Storage
     storage = Storage()
 
-    # Create tables
+    # Create buckets
     storage.create('articles', articles_descriptor)
     storage.create('comments', comments_descriptor)
 
+    # Assert rows
     assert storage['articles'].shape == (0, 0)
     assert storage['comments'].shape == (0, 0)
 
-    # Write data to tables
+    # Write rows
     storage.write('articles', articles_rows)
     storage.write('comments', comments_rows)
 
+    # Assert rows
     assert storage['articles'].shape == (2, 11)
     assert storage['comments'].shape == (1, 1)
 
-    # Create existent table
+    # Create existent bucket
     with pytest.raises(RuntimeError):
         storage.create('articles', articles_descriptor)
 
-    # Get table representation
+    # Assert representation
     assert repr(storage).startswith('Storage')
 
-    # Get tables list
+    # Assert buckets
     assert storage.buckets == ['articles', 'comments']
 
-    # Get table schemas (takes schemas from cache)
+    # Assert descriptors (from cache)
     assert storage.describe('articles') == articles_descriptor
     assert storage.describe('comments') == comments_descriptor
 
-    # Get table data
+    # Assert rows
     assert list(storage.read('articles')) == sync_rows(articles_descriptor, articles_rows)
     assert list(storage.read('comments')) == sync_rows(comments_descriptor, comments_rows)
 
-    # Delete tables
-    for bucket in storage.buckets:
-        storage.delete(bucket)
+    # Delete buckets
+    storage.delete()
 
-    # Delete non existent table
+    # Delete non existent bucket
     with pytest.raises(RuntimeError):
         storage.delete('articles')
 

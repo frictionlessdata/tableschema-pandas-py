@@ -3,18 +3,28 @@
 [![Travis](https://img.shields.io/travis/frictionlessdata/jsontableschema-pandas-py/master.svg)](https://travis-ci.org/frictionlessdata/jsontableschema-pandas-py)
 [![Coveralls](http://img.shields.io/coveralls/frictionlessdata/jsontableschema-pandas-py.svg?branch=master)](https://coveralls.io/r/frictionlessdata/jsontableschema-pandas-py?branch=master)
 [![PyPi](https://img.shields.io/pypi/v/jsontableschema-pandas.svg)](https://pypi.python.org/pypi/jsontableschema-pandas)
+[![SemVer](https://img.shields.io/badge/versions-SemVer-brightgreen.svg)](http://semver.org/)
 [![Gitter](https://img.shields.io/gitter/room/frictionlessdata/chat.svg)](https://gitter.im/frictionlessdata/chat)
 
 Generate and load Pandas data frames based on JSON Table Schema descriptors.
 
-## Installation
+> Version `v0.2` contains breaking changes:
+- removed `Storage(prefix=)` argument (was a stub)
+- renamed `Storage(tables=)` to `Storage(dataframes=)`
+- renamed `Storage.tables` to `Storage.buckets`
+- changed `Storage.read` to read into memory
+- added `Storage.iter` to yield row by row
+
+## Getting Started
+
+### Installation
 
 ```
 $ pip install datapackage
 $ pip install jsontableschema-pandas
 ```
 
-## Quick start
+### Example
 
 You can easily load resources from a data package as Pandas data frames by simply using `datapackage.push_datapackage` function:
 
@@ -24,7 +34,7 @@ You can easily load resources from a data package as Pandas data frames by simpl
 >>> data_url = 'http://data.okfn.org/data/core/country-list/datapackage.json'
 >>> storage = datapackage.push_datapackage(data_url, 'pandas')
 
->>> storage.tables
+>>> storage.buckets
 ['data___data']
 
 >>> type(storage['data___data'])
@@ -48,7 +58,7 @@ Also it is possible to pull your existing data frame into a data package:
 Storage
 ```
 
-## Tabular Storage
+### Storage
 
 Package implements [Tabular Storage](https://github.com/frictionlessdata/jsontableschema-py#storage) interface.
 
@@ -71,7 +81,7 @@ Storage works as a container for Pandas data frames. You can define new data fra
 ...     ]
 ... })
 
->>> storage.tables
+>>> storage.buckets
 ['data']
 
 >>> storage['data'].shape
@@ -94,8 +104,8 @@ Also you can use [tabulator](https://github.com/frictionlessdata/tabulator-py) t
 ```python
 >>> import tabulator
 
->>> with tabulator.topen('data/comments.csv', with_headers=True) as data:
-...     storage.write('data', data)
+>>> with tabulator.Stream('data/comments.csv', headers=1) as stream:
+...     storage.write('data', stream)
 
 >>> storage['data']
 id comment
@@ -105,6 +115,17 @@ id comment
 ```
 
 As you see, subsequent writes simply appends new data on top of existing ones.
+
+## API Reference
+
+### Snapshot
+
+https://github.com/frictionlessdata/jsontableschema-py#snapshot
+
+### Detailed
+
+- [Docstrings](https://github.com/frictionlessdata/jsontableschema-py/tree/master/jsontableschema/storage.py)
+- [Changelog](https://github.com/frictionlessdata/jsontableschema-pandas-py/commits/master)
 
 ## Contributing
 

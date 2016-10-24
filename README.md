@@ -104,8 +104,8 @@ Also you can use [tabulator](https://github.com/frictionlessdata/tabulator-py) t
 ```python
 >>> import tabulator
 
->>> with tabulator.topen('data/comments.csv', with_headers=True) as data:
-...     storage.write('data', data)
+>>> with tabulator.Stream('data/comments.csv', headers=1) as stream:
+...     storage.write('data', stream)
 
 >>> storage['data']
 id comment

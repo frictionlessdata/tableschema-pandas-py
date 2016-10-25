@@ -20,9 +20,9 @@ PACKAGE = 'jsontableschema_pandas'
 NAME = PACKAGE.replace('_', '-')
 INSTALL_REQUIRES = [
     'six>=1.9,<2.0a',
-    'pandas>=0.18,<0.19a',
-    'tabulator>=0.7,<0.8a',
-    'jsontableschema>=0.7,<0.8a',
+    'pandas>=0.18,<1.0a',
+    'tabulator>=0.7,<1.0a',
+    'jsontableschema>=0.7,<1.0a',
 ]
 TESTS_REQUIRE = [
     'pylama',

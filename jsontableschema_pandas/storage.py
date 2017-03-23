@@ -118,10 +118,10 @@ class Storage(object):
             rdata = []
             for field in schema.fields:
                 if schema.primary_key and schema.primary_key[0] == field.name:
-                    rdata.append(mappers.dvalue_to_jtsvalue(pk))
+                    rdata.append(field.cast_value(pk))
                 else:
                     value = row[field.name]
-                    rdata.append(mappers.dvalue_to_jtsvalue(value))
+                    rdata.append(field.cast_value(value))
             yield rdata
 
     def read(self, bucket):

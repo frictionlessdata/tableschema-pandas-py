@@ -50,6 +50,9 @@ def test_descriptor_and_rows_to_dataframe_composite_primary_key_not_supported():
 
 def test_jtstype_to_dtype():
     assert mappers.jtstype_to_dtype('string') == np.dtype('O')
+    assert mappers.jtstype_to_dtype('year') == np.dtype(int)
+    assert mappers.jtstype_to_dtype('yearmonth') == np.dtype(int)
+    assert mappers.jtstype_to_dtype('duration') == np.dtype('O')
     with pytest.raises(TypeError):
         mappers.jtstype_to_dtype('non-existent')
 

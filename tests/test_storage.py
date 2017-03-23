@@ -1,25 +1,28 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import datetime
 import io
 import json
-import pytest
+
 import pandas as pd
-from tabulator import Stream
+import pytest
 from jsontableschema import Schema
 from jsontableschema_pandas import Storage
+from tabulator import Stream
 
 
 # Tests
 
 def test_storage():
-
     # Get resources
-    articles_descriptor = json.load(io.open('data/articles.json', encoding='utf-8'))
-    comments_descriptor = json.load(io.open('data/comments.json', encoding='utf-8'))
+    articles_descriptor = json.load(
+        io.open('data/articles.json', encoding='utf-8'))
+    comments_descriptor = json.load(
+        io.open('data/comments.json', encoding='utf-8'))
     articles_rows = Stream('data/articles.csv', headers=1).open().read()
     comments_rows = Stream('data/comments.csv', headers=1).open().read()
 
@@ -57,8 +60,11 @@ def test_storage():
     assert storage.describe('comments') == comments_descriptor
 
     # Assert rows
-    assert list(storage.read('articles')) == sync_rows(articles_descriptor, articles_rows)
-    assert list(storage.read('comments')) == sync_rows(comments_descriptor, comments_rows)
+    assert (normalize_date_types(list(storage.read('articles'))) ==
+            normalize_date_types(sync_rows(articles_descriptor,
+                                           articles_rows)))
+    assert list(storage.read('comments')) == sync_rows(
+        comments_descriptor, comments_rows)
 
     # Describe bucket
     storage.describe('articles', articles_descriptor)
@@ -99,8 +105,10 @@ def test_init_tables():
     assert list(storage.read('data')) == [[1, 'a'], [2, 'b']]
     assert storage.describe('data') == {
         'fields': [
-            {'name': 'key', 'type': 'integer', 'constraints': {'required': True}},
-            {'name': 'value', 'type': 'string', 'constraints': {'required': True}},
+            {'name': 'key', 'type': 'integer',
+             'constraints': {'required': True}},
+            {'name': 'value', 'type': 'string',
+             'constraints': {'required': True}},
         ]
     }
 
@@ -117,8 +125,10 @@ def test_restore_schema_with_primary_key():
     assert storage.describe('data') == {
         'primaryKey': 'key',
         'fields': [
-            {'name': 'key', 'type': 'integer', 'constraints': {'required': True}},
-            {'name': 'value', 'type': 'string', 'constraints': {'required': True}},
+            {'name': 'key', 'type': 'integer',
+             'constraints': {'required': True}},
+            {'name': 'value', 'type': 'string',
+             'constraints': {'required': True}},
         ]
     }
 
@@ -149,5 +159,23 @@ def sync_rows(descriptor, rows):
     result = []
     schema = Schema(descriptor)
     for row in rows:
-        result.append(schema.cast_row(row))
+        cast_row = schema.cast_row(row)
+        result.append(cast_row)
     return result
+
+
+def normalize_date_types(rows):
+    cast_rows = []
+    for row in rows:
+        cast_row = []
+        for value in row:
+            if isinstance(value, datetime.date):
+                cast_row.append(datetime.datetime.combine(
+                    value, datetime.datetime.min.time()))
+            elif isinstance(value, pd.Timestamp):
+                cast_row.append(value.to_datetime())
+            else:
+                cast_row.append(value)
+        cast_rows.append(cast_row)
+
+    return cast_rows

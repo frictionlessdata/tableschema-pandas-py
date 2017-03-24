@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import six
 import json
-import math
+
 import numpy as np
 import pandas as pd
 import pandas.core.common as pdc
-from decimal import Decimal
+import six
 from jsontableschema import Schema
 from jsontableschema.exceptions import InvalidObjectType
 
@@ -18,7 +17,6 @@ from jsontableschema.exceptions import InvalidObjectType
 # Module API
 
 def descriptor_and_rows_to_dataframe(descriptor, rows):
-
     # Prepare
     primary_key = None
     schema = Schema(descriptor)
@@ -77,7 +75,6 @@ def descriptor_and_rows_to_dataframe(descriptor, rows):
 
 
 def dataframe_to_descriptor(dataframe):
-
     # Prepare
     fields = []
     primary_key = None
@@ -111,7 +108,6 @@ def dataframe_to_descriptor(dataframe):
 
 
 def jtstype_to_dtype(jtstype):
-
     # Mapping
     MAPPING = {
         'string': np.dtype('O'),
@@ -141,7 +137,6 @@ def jtstype_to_dtype(jtstype):
 
 
 def dtype_to_jtstype(dtype):
-
     # Convert
     if pdc.is_bool_dtype(dtype):
         return 'boolean'

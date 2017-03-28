@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import six
 import json
-import math
+
 import numpy as np
 import pandas as pd
 import pandas.core.common as pdc
+import six
 from jsontableschema import Schema
 from jsontableschema.exceptions import InvalidObjectType
 
@@ -17,7 +17,6 @@ from jsontableschema.exceptions import InvalidObjectType
 # Module API
 
 def descriptor_and_rows_to_dataframe(descriptor, rows):
-
     # Prepare
     primary_key = None
     schema = Schema(descriptor)
@@ -76,7 +75,6 @@ def descriptor_and_rows_to_dataframe(descriptor, rows):
 
 
 def dataframe_to_descriptor(dataframe):
-
     # Prepare
     fields = []
     primary_key = None
@@ -110,7 +108,6 @@ def dataframe_to_descriptor(dataframe):
 
 
 def jtstype_to_dtype(jtstype):
-
     # Mapping
     MAPPING = {
         'string': np.dtype('O'),
@@ -119,11 +116,14 @@ def jtstype_to_dtype(jtstype):
         'boolean': np.dtype(bool),
         'array': np.dtype(list),
         'object': np.dtype(dict),
-        'date': np.dtype('O'),
+        'date': np.dtype('datetime64[ns]'),
         'time': np.dtype('O'),
         'datetime': np.dtype('datetime64[ns]'),
+        'year': np.dtype(int),
+        'yearmonth': np.dtype(int),
         'geopoint': np.dtype('O'),
         'geojson': np.dtype('O'),
+        'duration': np.dtype('O'),
         'any': np.dtype('O'),
     }
 
@@ -137,7 +137,6 @@ def jtstype_to_dtype(jtstype):
 
 
 def dtype_to_jtstype(dtype):
-
     # Convert
     if pdc.is_bool_dtype(dtype):
         return 'boolean'
@@ -149,24 +148,3 @@ def dtype_to_jtstype(dtype):
         return 'datetime'
     else:
         return 'string'
-
-
-def dvalue_to_jtsvalue(value):
-
-    # I guess there are more types to convert, could not find a canonical
-    # list of scalar Pandas data types, but using following command:
-    #
-    #     [x for x in dir(pd)
-    #      if x[0].isupper() and not hasattr(getattr(pd, x), '__len__')]
-    #
-    # I found these types:
-    #
-    #     DateOffset, NaT, Period, Timedelta, Timestamp
-
-    # Restore pandas value to native value
-    if isinstance(value, float) and math.isnan(value):
-        return None
-    elif isinstance(value, pd.Timestamp):
-        return value.to_datetime()
-    else:
-        return value

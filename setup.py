@@ -19,11 +19,10 @@ def read(*segments):
 PACKAGE = 'jsontableschema_pandas'
 NAME = PACKAGE.replace('_', '-')
 INSTALL_REQUIRES = [
-    'six>=1.9,<2.0a',
-    # pandas 0.19 hangs on install
-    'pandas>=0.18,<0.19a',
-    'tabulator>=0.7,<1.0a',
-    'jsontableschema>=0.7,<1.0a',
+    'six>=1.9,<2.0',
+    'pandas>=0.18,<2.0',
+    'tabulator>=0.7,<2.0',
+    'jsontableschema>=0.7,<2.0',
 ]
 TESTS_REQUIRE = [
     'pylama',

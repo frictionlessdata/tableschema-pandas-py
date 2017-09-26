@@ -15,32 +15,34 @@ from . import mappers
 # Module API
 
 class Storage(object):
-    """Pandas Tabular Storage.
-
-    It's an implementation of `jsontablescema.Storage`.
-
-    Args:
-        dataframes (list): list of storage dataframes
-
-    """
 
     # Public
 
     def __init__(self, dataframes=None):
+        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
+        """
         self.__dataframes = dataframes or collections.OrderedDict()
         self.__descriptors = {}
 
     def __repr__(self):
+        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
+        """
         return 'Storage'
 
     def __getitem__(self, key):
+        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
+        """
         return self.__dataframes[key]
 
     @property
     def buckets(self):
+        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
+        """
         return list(self.__dataframes.keys())
 
     def create(self, bucket, descriptor, force=False):
+        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
+        """
 
         # Make lists
         buckets = bucket
@@ -64,6 +66,8 @@ class Storage(object):
             self.__dataframes[bucket] = pd.DataFrame()
 
     def delete(self, bucket=None, ignore=False):
+        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
+        """
 
         # Make lists
         buckets = bucket
@@ -79,6 +83,7 @@ class Storage(object):
             if bucket not in self.buckets:
                 if not ignore:
                     raise RuntimeError('Bucket "%s" doesn\'t exist' % bucket)
+                return
 
             # Remove from descriptors
             if bucket in self.__descriptors:
@@ -89,6 +94,8 @@ class Storage(object):
                 del self.__dataframes[bucket]
 
     def describe(self, bucket, descriptor=None):
+        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
+        """
 
         # Set descriptor
         if descriptor is not None:
@@ -104,6 +111,8 @@ class Storage(object):
         return descriptor
 
     def iter(self, bucket):
+        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
+        """
 
         # Check existense
         if bucket not in self.buckets:
@@ -125,13 +134,14 @@ class Storage(object):
             yield rdata
 
     def read(self, bucket):
-
-        # Get rows
+        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
+        """
         rows = list(self.iter(bucket))
-
         return rows
 
     def write(self, bucket, rows):
+        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
+        """
 
         # Prepare
         descriptor = self.describe(bucket)

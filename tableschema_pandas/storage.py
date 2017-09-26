@@ -8,7 +8,7 @@ import six
 import collections
 import pandas as pd
 import tableschema
-from . import mappers
+from .mapper import Mapper
 
 
 # Module API
@@ -20,8 +20,13 @@ class Storage(object):
     def __init__(self, dataframes=None):
         """https://github.com/frictionlessdata/tableschema-pandas-py#storage
         """
+
+        # Set attributes
         self.__dataframes = dataframes or collections.OrderedDict()
         self.__descriptors = {}
+
+        # Create mapper
+        self.__mapper = Mapper()
 
     def __repr__(self):
         """https://github.com/frictionlessdata/tableschema-pandas-py#storage
@@ -105,7 +110,7 @@ class Storage(object):
             descriptor = self.__descriptors.get(bucket)
             if descriptor is None:
                 dataframe = self.__dataframes[bucket]
-                descriptor = mappers.dataframe_to_descriptor(dataframe)
+                descriptor = self.__mapper.restore_descriptor(dataframe)
 
         return descriptor
 
@@ -152,7 +157,7 @@ class Storage(object):
 
         # Prepare
         descriptor = self.describe(bucket)
-        new_data_frame = mappers.descriptor_and_rows_to_dataframe(descriptor, rows)
+        new_data_frame = self.__mapper.convert_descriptor(descriptor, rows)
 
         # Just set new DataFrame if current is empty
         if self.__dataframes[bucket].size == 0:

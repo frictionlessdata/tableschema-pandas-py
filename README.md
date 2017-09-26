@@ -2,7 +2,7 @@
 
 [![Travis](https://img.shields.io/travis/frictionlessdata/tableschema-pandas-py/master.svg)](https://travis-ci.org/frictionlessdata/tableschema-pandas-py)
 [![Coveralls](http://img.shields.io/coveralls/frictionlessdata/tableschema-pandas-py.svg?branch=master)](https://coveralls.io/r/frictionlessdata/tableschema-pandas-py?branch=master)
-[![PyPi](https://img.shields.io/pypi/v/tableschema-pandas.svg)](https://pypi.python.org/pypi/jsontableschema-pandas)
+[![PyPi](https://img.shields.io/pypi/v/tableschema-pandas.svg)](https://pypi.python.org/pypi/tableschema-pandas)
 [![Gitter](https://img.shields.io/gitter/room/frictionlessdata/chat.svg)](https://gitter.im/frictionlessdata/chat)
 
 Generate and load Pandas data frames [Table Schema](http://specs.frictionlessdata.io/table-schema/) descriptors.

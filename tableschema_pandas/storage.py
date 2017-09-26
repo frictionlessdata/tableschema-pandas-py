@@ -7,8 +7,7 @@ from __future__ import unicode_literals
 import six
 import collections
 import pandas as pd
-import jsontableschema
-from jsontableschema import Schema
+import tableschema
 from . import mappers
 
 
@@ -61,7 +60,7 @@ class Storage(object):
 
         # Define dataframes
         for bucket, descriptor in zip(buckets, descriptors):
-            jsontableschema.validate(descriptor)
+            tableschema.validate(descriptor)
             self.__descriptors[bucket] = descriptor
             self.__dataframes[bucket] = pd.DataFrame()
 
@@ -120,16 +119,24 @@ class Storage(object):
 
         # Prepare
         descriptor = self.describe(bucket)
-        schema = Schema(descriptor)
+        schema = tableschema.Schema(descriptor)
 
         # Yield rows
         for pk, row in self.__dataframes[bucket].iterrows():
             rdata = []
             for field in schema.fields:
                 if schema.primary_key and schema.primary_key[0] == field.name:
+                    if str(pk) == 'nan':
+                        pk = None
+                    if pk and field.type == 'integer':
+                        pk = int(pk)
                     rdata.append(field.cast_value(pk))
                 else:
                     value = row[field.name]
+                    if str(value) == 'nan':
+                        value = None
+                    if value and field.type == 'integer':
+                        value = int(value)
                     rdata.append(field.cast_value(value))
             yield rdata
 

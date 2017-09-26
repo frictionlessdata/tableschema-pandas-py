@@ -6,11 +6,13 @@ from __future__ import unicode_literals
 
 import pytest
 import datetime
+import tableschema
 import numpy as np
 import pandas as pd
-from jsontableschema import Schema
-from jsontableschema_pandas import mappers
+from tableschema_pandas import mappers
 
+
+# Tests
 
 def test_dataframe_to_descriptor():
     df = pd.read_csv('data/sample.csv', sep=';', index_col=['Id'])

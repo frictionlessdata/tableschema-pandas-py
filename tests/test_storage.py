@@ -4,15 +4,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import datetime
 import io
 import json
-
-import pandas as pd
 import pytest
-from jsontableschema import Schema
-from jsontableschema_pandas import Storage
+import datetime
+import tableschema
+import pandas as pd
 from tabulator import Stream
+from tableschema_pandas import Storage
 
 
 # Tests
@@ -157,7 +156,7 @@ def test_multiple_writes():
 
 def sync_rows(descriptor, rows):
     result = []
-    schema = Schema(descriptor)
+    schema = tableschema.Schema(descriptor)
     for row in rows:
         cast_row = schema.cast_row(row)
         result.append(cast_row)

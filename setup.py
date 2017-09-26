@@ -16,13 +16,13 @@ def read(*segments):
 
 
 # Prepare
-PACKAGE = 'jsontableschema_pandas'
+PACKAGE = 'tableschema_pandas'
 NAME = PACKAGE.replace('_', '-')
 INSTALL_REQUIRES = [
     'six>=1.9,<2.0',
     'pandas>=0.18,<2.0',
-    'tabulator>=0.7,<2.0',
-    'jsontableschema>=0.7,<2.0',
+    'tabulator>=1.0,<2.0',
+    'tableschema>=1.0,<2.0',
 ]
 TESTS_REQUIRE = [
     'pylama',
@@ -47,7 +47,7 @@ setup(
     description='Generate Pandas data frames, load and extract data, based on JSON Table Schema descriptors.',
     author='Open Knowledge Foundation',
     author_email='info@okfn.org',
-    url='https://github.com/frictionlessdata/jsontableschema-pandas-py',
+    url='https://github.com/frictionlessdata/tableschema-pandas-py',
     license='LGPLv3+',
     keywords=['frictionless data', 'datapackage', 'pandas'],
     classifiers=[

@@ -4,14 +4,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import six
 import json
-
+import tableschema
 import numpy as np
 import pandas as pd
 import pandas.core.common as pdc
-import six
-from jsontableschema import Schema
-from jsontableschema.exceptions import InvalidObjectType
 
 
 # Module API
@@ -19,7 +17,7 @@ from jsontableschema.exceptions import InvalidObjectType
 def descriptor_and_rows_to_dataframe(descriptor, rows):
     # Prepare
     primary_key = None
-    schema = Schema(descriptor)
+    schema = tableschema.Schema(descriptor)
     if len(schema.primary_key) == 1:
         primary_key = schema.primary_key[0]
     elif len(schema.primary_key) > 1:
@@ -34,8 +32,10 @@ def descriptor_and_rows_to_dataframe(descriptor, rows):
         index = None
         for field, value in zip(schema.fields, row):
             try:
+                if value and field.type == 'integer':
+                    value = int(value)
                 value = field.cast_value(value)
-            except InvalidObjectType:
+            except tableschema.exceptions.CastError:
                 value = json.loads(value)
             if value is None and field.type in ('number', 'integer'):
                 jtstypes_map[field.name] = 'number'

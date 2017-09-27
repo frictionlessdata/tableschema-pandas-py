@@ -6,6 +6,8 @@ from __future__ import unicode_literals
 
 import six
 import json
+import isodate
+import datetime
 import tableschema
 import numpy as np
 import pandas as pd
@@ -18,8 +20,8 @@ class Mapper(object):
 
     # Public
 
-    def convert_descriptor(self, descriptor, rows):
-        """Convert descriptor to Pandas
+    def convert_descriptor_and_rows(self, descriptor, rows):
+        """Convert descriptor and rows to Pandas
         """
 
         # Prepare
@@ -28,7 +30,8 @@ class Mapper(object):
         if len(schema.primary_key) == 1:
             primary_key = schema.primary_key[0]
         elif len(schema.primary_key) > 1:
-            raise RuntimeError('Multi-column primary keys are not supported')
+            message = 'Multi-column primary keys are not supported'
+            raise tableschema.exceptions.StorageError(message)
 
         # Get data/index
         data_rows = []
@@ -39,13 +42,14 @@ class Mapper(object):
             index = None
             for field, value in zip(schema.fields, row):
                 try:
-                    if str(value) == 'nan':
+                    if isinstance(value, float) and np.isnan(value):
                         value = None
                     if value and field.type == 'integer':
                         value = int(value)
                     value = field.cast_value(value)
                 except tableschema.exceptions.CastError:
                     value = json.loads(value)
+                # http://pandas.pydata.org/pandas-docs/stable/gotchas.html#support-for-integer-na
                 if value is None and field.type in ('number', 'integer'):
                     jtstypes_map[field.name] = 'number'
                     value = np.NaN
@@ -82,36 +86,35 @@ class Mapper(object):
 
         return dataframe
 
-    def convert_type(self, jtstype):
+    def convert_type(self, type):
         """Convert type to Pandas
         """
 
         # Mapping
-        MAPPING = {
-            'string': np.dtype('O'),
-            'number': np.dtype(float),
-            'integer': np.dtype(int),
-            'boolean': np.dtype(bool),
-            'array': np.dtype(list),
-            'object': np.dtype(dict),
-            'date': np.dtype('datetime64[ns]'),
-            'time': np.dtype('O'),
-            'datetime': np.dtype('datetime64[ns]'),
-            'year': np.dtype(int),
-            'yearmonth': np.dtype(int),
-            'geopoint': np.dtype('O'),
-            'geojson': np.dtype('O'),
-            'duration': np.dtype('O'),
+        mapping = {
             'any': np.dtype('O'),
+            'array': np.dtype(list),
+            'boolean': np.dtype(bool),
+            'date': np.dtype('O'),
+            'datetime': np.dtype('datetime64[ns]'),
+            'duration': np.dtype('O'),
+            'geojson': np.dtype('O'),
+            'geopoint': np.dtype('O'),
+            'integer': np.dtype(int),
+            'number': np.dtype(float),
+            'object': np.dtype(dict),
+            'string': np.dtype('O'),
+            'time': np.dtype('O'),
+            'year': np.dtype(int),
+            'yearmonth': np.dtype('O'),
         }
 
         # Get type
-        try:
-            dtype = MAPPING[jtstype]
-        except KeyError:
-            raise TypeError('JTS type "%s" is not supported' % jtstype)
+        if type not in mapping:
+            message = 'Type "%s" is not supported' % type
+            raise tableschema.exceptions.StorageError(message)
 
-        return dtype
+        return mapping[type]
 
     def restore_descriptor(self, dataframe):
         """Restore descriptor from Pandas
@@ -134,10 +137,12 @@ class Mapper(object):
 
         # Fields
         for column, dtype in dataframe.dtypes.iteritems():
-            field_type = self.restore_type(dtype)
+            sample = dataframe[column].iloc[0] if len(dataframe) else None
+            field_type = self.restore_type(dtype, sample=sample)
             field = {'name': column, 'type': field_type}
-            if dataframe[column].isnull().sum() == 0:
-                field['constraints'] = {'required': True}
+            # TODO: provide better required indication
+            # if dataframe[column].isnull().sum() == 0:
+            #     field['constraints'] = {'required': True}
             fields.append(field)
 
         # Descriptor
@@ -148,18 +153,55 @@ class Mapper(object):
 
         return descriptor
 
-    def restore_type(self, dtype):
+    def restore_row(self, row, schema, pk):
+        """Restore row from Pandas
+        """
+        result = []
+        for field in schema.fields:
+            if schema.primary_key and schema.primary_key[0] == field.name:
+                if field.type == 'number' and np.isnan(pk):
+                    pk = None
+                if pk and field.type == 'integer':
+                    pk = int(pk)
+                result.append(field.cast_value(pk))
+            else:
+                value = row[field.name]
+                if field.type == 'number' and np.isnan(value):
+                    value = None
+                if value and field.type == 'integer':
+                    value = int(value)
+                elif field.type == 'datetime':
+                    value = value.to_pydatetime()
+                result.append(field.cast_value(value))
+        return result
+
+    def restore_type(self, dtype, sample=None):
         """Restore type from Pandas
         """
 
-        # Convert
+        # Pandas types
         if pdc.is_bool_dtype(dtype):
             return 'boolean'
+        elif pdc.is_datetime64_any_dtype(dtype):
+            return 'datetime'
         elif pdc.is_integer_dtype(dtype):
             return 'integer'
         elif pdc.is_numeric_dtype(dtype):
             return 'number'
-        elif pdc.is_datetime64_any_dtype(dtype):
-            return 'datetime'
-        else:
-            return 'string'
+
+        # Python types
+        if sample is not None:
+            if isinstance(sample, (list, tuple)):
+                return 'array'
+            elif isinstance(sample, datetime.date):
+                return 'date'
+            elif isinstance(sample, isodate.Duration):
+                return 'duration'
+            elif isinstance(sample, dict):
+                return 'object'
+            elif isinstance(sample, six.string_types):
+                return 'string'
+            elif isinstance(sample, datetime.time):
+                return 'time'
+
+        return 'string'

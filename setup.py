@@ -22,7 +22,8 @@ INSTALL_REQUIRES = [
     'six>=1.9,<2.0',
     'pandas>=0.18,<2.0',
     'tabulator>=1.0,<2.0',
-    'tableschema>=1.0,<2.0',
+    'tableschema>=1.0.4,<2.0',
+    'isodate>=0.5.4,<2.0',
 ]
 TESTS_REQUIRE = [
     'pylama',

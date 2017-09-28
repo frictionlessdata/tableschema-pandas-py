@@ -7,40 +7,46 @@ from __future__ import unicode_literals
 import six
 import collections
 import pandas as pd
-import jsontableschema
-from jsontableschema import Schema
-from . import mappers
+import tableschema
+from .mapper import Mapper
 
 
 # Module API
 
 class Storage(object):
-    """Pandas Tabular Storage.
-
-    It's an implementation of `jsontablescema.Storage`.
-
-    Args:
-        dataframes (list): list of storage dataframes
-
-    """
 
     # Public
 
     def __init__(self, dataframes=None):
+        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
+        """
+
+        # Set attributes
         self.__dataframes = dataframes or collections.OrderedDict()
         self.__descriptors = {}
 
+        # Create mapper
+        self.__mapper = Mapper()
+
     def __repr__(self):
+        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
+        """
         return 'Storage'
 
     def __getitem__(self, key):
+        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
+        """
         return self.__dataframes[key]
 
     @property
     def buckets(self):
-        return list(self.__dataframes.keys())
+        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
+        """
+        return list(sorted(self.__dataframes.keys()))
 
     def create(self, bucket, descriptor, force=False):
+        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
+        """
 
         # Make lists
         buckets = bucket
@@ -54,16 +60,19 @@ class Storage(object):
         for bucket in buckets:
             if bucket in self.buckets:
                 if not force:
-                    raise RuntimeError('Bucket "%s" already exists' % bucket)
+                    message = 'Bucket "%s" already exists' % bucket
+                    raise tableschema.exceptions.StorageError(message)
                 self.delete(bucket)
 
         # Define dataframes
         for bucket, descriptor in zip(buckets, descriptors):
-            jsontableschema.validate(descriptor)
+            tableschema.validate(descriptor)
             self.__descriptors[bucket] = descriptor
             self.__dataframes[bucket] = pd.DataFrame()
 
     def delete(self, bucket=None, ignore=False):
+        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
+        """
 
         # Make lists
         buckets = bucket
@@ -78,7 +87,9 @@ class Storage(object):
             # Non existent bucket
             if bucket not in self.buckets:
                 if not ignore:
-                    raise RuntimeError('Bucket "%s" doesn\'t exist' % bucket)
+                    message = 'Bucket "%s" doesn\'t exist' % bucket
+                    raise tableschema.exceptions.StorageError(message)
+                return
 
             # Remove from descriptors
             if bucket in self.__descriptors:
@@ -89,6 +100,8 @@ class Storage(object):
                 del self.__dataframes[bucket]
 
     def describe(self, bucket, descriptor=None):
+        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
+        """
 
         # Set descriptor
         if descriptor is not None:
@@ -99,43 +112,41 @@ class Storage(object):
             descriptor = self.__descriptors.get(bucket)
             if descriptor is None:
                 dataframe = self.__dataframes[bucket]
-                descriptor = mappers.dataframe_to_descriptor(dataframe)
+                descriptor = self.__mapper.restore_descriptor(dataframe)
 
         return descriptor
 
     def iter(self, bucket):
+        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
+        """
 
         # Check existense
         if bucket not in self.buckets:
-            raise RuntimeError('Bucket "%s" doesn\'t exist.' % bucket)
+            message = 'Bucket "%s" doesn\'t exist.' % bucket
+            raise tableschema.exceptions.StorageError(message)
 
         # Prepare
         descriptor = self.describe(bucket)
-        schema = Schema(descriptor)
+        schema = tableschema.Schema(descriptor)
 
         # Yield rows
         for pk, row in self.__dataframes[bucket].iterrows():
-            rdata = []
-            for field in schema.fields:
-                if schema.primary_key and schema.primary_key[0] == field.name:
-                    rdata.append(field.cast_value(pk))
-                else:
-                    value = row[field.name]
-                    rdata.append(field.cast_value(value))
-            yield rdata
+            row = self.__mapper.restore_row(row, schema=schema, pk=pk)
+            yield row
 
     def read(self, bucket):
-
-        # Get rows
+        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
+        """
         rows = list(self.iter(bucket))
-
         return rows
 
     def write(self, bucket, rows):
+        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
+        """
 
         # Prepare
         descriptor = self.describe(bucket)
-        new_data_frame = mappers.descriptor_and_rows_to_dataframe(descriptor, rows)
+        new_data_frame = self.__mapper.convert_descriptor_and_rows(descriptor, rows)
 
         # Just set new DataFrame if current is empty
         if self.__dataframes[bucket].size == 0:

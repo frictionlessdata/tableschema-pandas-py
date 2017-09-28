@@ -1,5 +1,5 @@
 global-include VERSION
-include LICENSE.txt
+include LICENSE.md
 include Makefile
 include pylama.ini
 include pytest.ini

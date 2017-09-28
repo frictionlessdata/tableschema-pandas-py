@@ -57,6 +57,10 @@ Also it is possible to pull your existing data frame into a data package:
 Storage
 ```
 
+## Documentation
+
+The whole public API of this package is described here and follows semantic versioning rules. Everyting outside of this readme are private API and could be changed without any notification on any new version.
+
 ### Storage
 
 Package implements [Tabular Storage](https://github.com/frictionlessdata/tableschema-py#storage) interface (see full documentation on the link):

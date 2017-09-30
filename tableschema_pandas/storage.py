@@ -6,14 +6,14 @@ from __future__ import unicode_literals
 
 import six
 import collections
-import pandas as pd
 import tableschema
+import pandas as pd
 from .mapper import Mapper
 
 
 # Module API
 
-class Storage(object):
+class Storage(tableschema.Storage):
 
     # Public
 

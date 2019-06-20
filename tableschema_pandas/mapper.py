@@ -11,7 +11,7 @@ import datetime
 import tableschema
 import numpy as np
 import pandas as pd
-import pandas.core.common as pdc
+import pandas.core.dtypes.api as dtypes_api
 
 
 # Module API
@@ -180,13 +180,13 @@ class Mapper(object):
         """
 
         # Pandas types
-        if pdc.is_bool_dtype(dtype):
+        if dtypes_api.is_bool_dtype(dtype):
             return 'boolean'
-        elif pdc.is_datetime64_any_dtype(dtype):
+        elif dtypes_api.is_datetime64_any_dtype(dtype):
             return 'datetime'
-        elif pdc.is_integer_dtype(dtype):
+        elif dtypes_api.is_integer_dtype(dtype):
             return 'integer'
-        elif pdc.is_numeric_dtype(dtype):
+        elif dtypes_api.is_numeric_dtype(dtype):
             return 'number'
 
         # Python types

@@ -11,6 +11,20 @@ Generate and load Pandas data frames [Table Schema](http://specs.frictionlessdat
 
 - implements `tableschema.Storage` interface
 
+## Contents
+
+<!--TOC-->
+
+  - [Getting Started](#getting-started)
+    - [Installation](#installation)
+    - [Example](#example)
+  - [Documentation](#documentation)
+    - [Storage](#storage)
+  - [Contributing](#contributing)
+  - [Changelog](#changelog)
+
+<!--TOC-->
+
 ## Getting Started
 
 ### Installation
@@ -169,6 +183,6 @@ and `mock` packages. This packages are available only in tox envionments.
 
 Here described only breaking and the most important changes. The full changelog and documentation for all released versions could be found in nicely formatted [commit history](https://github.com/frictionlessdata/tableschema-pandas-py/commits/master).
 
-### v0.x
+#### v0.x
 
 Initial driver implementation.

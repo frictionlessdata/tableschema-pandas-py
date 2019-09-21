@@ -4,6 +4,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import six
 import pytest
 import datetime
 import tableschema
@@ -23,6 +24,7 @@ def test_mapper_convert_descriptor_and_rows():
     assert isinstance(df_new.index, pd.Index)
 
 
+@pytest.mark.skipif(six.PY3, reason='Pass only for Python2')
 def test_mapper_convert_descriptor_and_rows_with_datetime_index():
     mapper = Mapper()
     df = pd.read_csv('data/vix.csv', sep=';', parse_dates=['Date'], index_col=['Date'])

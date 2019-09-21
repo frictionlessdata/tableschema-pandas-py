@@ -11,7 +11,13 @@ import datetime
 import tableschema
 import numpy as np
 import pandas as pd
-import pandas.core.common as pdc
+
+# Starting from pandas@0.24 there is the new API
+# https://github.com/frictionlessdata/tableschema-pandas-py/issues/29
+try:
+    import pandas.core.dtypes.api as pdc
+except ImportError:
+    import pandas.core.common as pdc
 
 
 # Module API

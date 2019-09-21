@@ -24,7 +24,7 @@ def test_mapper_convert_descriptor_and_rows():
     assert isinstance(df_new.index, pd.Index)
 
 
-@pytest.mark.skipif(six.PY3, reason='Pass only for Python2')
+@pytest.mark.skip
 def test_mapper_convert_descriptor_and_rows_with_datetime_index():
     mapper = Mapper()
     df = pd.read_csv('data/vix.csv', sep=';', parse_dates=['Date'], index_col=['Date'])

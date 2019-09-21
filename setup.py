@@ -26,9 +26,10 @@ INSTALL_REQUIRES = [
     'isodate>=0.6',
 ]
 TESTS_REQUIRE = [
+    'mock',
     'pylama',
     'pytest',
-    'mock',
+    'pytest-cov',
     'tox',
 ]
 README = read('README.md')

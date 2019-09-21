@@ -1,22 +1,17 @@
-sudo:
-  required
-
 dist:
-  trusty
+  xenial
 
-addons:
-  apt:
-    packages:
-      - pandoc
+sudo:
+  false
 
 language:
   python
 
 python:
   - 2.7
-  # - 3.4
   - 3.5
   - 3.6
+  - 3.7
 
 env:
   global:
@@ -31,11 +26,6 @@ script:
 
 after_success:
   - coveralls
-
-before_deploy:
-  - pandoc --version
-  - pandoc -f markdown_github -t rst -o README.rst README.md
-  - mv README.rst README.md
 
 deploy:
   provider: pypi

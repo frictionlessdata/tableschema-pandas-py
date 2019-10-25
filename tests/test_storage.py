@@ -266,6 +266,21 @@ def test_storage_multiple_writes():
     ]
 
 
+def test_storage_composite_primary_key():
+    schema = {
+        'fields': [
+            {'name': 'field1', 'type': 'string'},
+            {'name': 'field2', 'type': 'string'},
+        ],
+        'primaryKey': ['field1', 'field2'],
+    }
+    data = [['value1', 'value2']]
+    storage = Storage()
+    storage.create('bucket', schema)
+    storage.write('bucket', data)
+    assert list(storage.read('bucket')) == data
+
+
 # Helpers
 
 def cast(resource, skip=[], wrap={}, wrap_each={}):

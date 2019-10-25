@@ -70,7 +70,7 @@ class Mapper(object):
                 index_dtype = self.convert_type(index_field.type)
                 if field.type in ['datetime', 'date']:
                     index_class = pd.DatetimeIndex
-                index = index_class(index_rows, name=field.name, dtype=index_dtype)
+                index = index_class(index_rows, name=index_field.name, dtype=index_dtype)
             elif len(schema.primary_key) > 1:
                 index = pd.MultiIndex.from_tuples(index_rows, names=schema.primary_key)
 

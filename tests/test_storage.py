@@ -101,7 +101,7 @@ COMPOUND = {
 
 # Tests
 
-@pytest.mark.skipif(six.PY3, reason='Pass only for Python2')
+@pytest.mark.skip
 def test_storage():
 
     # Create storage
@@ -252,7 +252,7 @@ def test_storage_read_missing_table():
     assert str(excinfo.value) == 'Bucket "data" doesn\'t exist.'
 
 
-@pytest.mark.skipif(six.PY3, reason='Pass only for Python2')
+@pytest.mark.skip
 def test_storage_multiple_writes():
     index = pd.Index([1, 2], name='key')
     df = pd.DataFrame([('a',), ('b',)], columns=('value',), index=index)

@@ -271,14 +271,15 @@ def test_storage_composite_primary_key():
         'fields': [
             {'name': 'field1', 'type': 'string'},
             {'name': 'field2', 'type': 'string'},
+            {'name': 'field3', 'type': 'string'},
         ],
         'primaryKey': ['field1', 'field2'],
     }
-    data = [['value1', 'value2']]
+    data = [['value1', 'value2', 'value3']]
     storage = Storage()
     storage.create('bucket', schema)
     storage.write('bucket', data)
-    assert list(storage.read('bucket')) == data
+    assert storage['bucket'].to_dict() == {'field3': {('value1', 'value2'): 'value3'}}
 
 
 # Helpers

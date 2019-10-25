@@ -34,13 +34,6 @@ def test_mapper_convert_descriptor_and_rows_with_datetime_index():
     assert isinstance(df_new.index, pd.DatetimeIndex)
 
 
-def test_mapper_convert_descriptor_and_rows_composite_primary_key_not_supported():
-    mapper = Mapper()
-    descriptor = {'fields': [{'name': 'a'}, {'name': 'b'}], 'primaryKey': ['a', 'b']}
-    with pytest.raises(tableschema.exceptions.StorageError):
-        mapper.convert_descriptor_and_rows(descriptor, [])
-
-
 def test_mapper_convert_type():
     mapper = Mapper()
     assert mapper.convert_type('string') == np.dtype('O')

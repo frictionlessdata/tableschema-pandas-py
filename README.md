@@ -40,36 +40,36 @@ $ pip install tableschema-pandas
 
 Code examples in this readme requires Python 3.3+ interpreter. You could see even more example in [examples](https://github.com/frictionlessdata/tableschema-pandas-py/tree/master/examples) directory.
 
-You can easily load resources from a data package as Pandas data frames by simply using `datapackage.push_datapackage` function:
-
 ```python
->>> import datapackage
+# pip install datapackage tableschema-pandas
+from tableschema import Storage
+from datapackage import Package
 
->>> data_url = 'http://data.okfn.org/data/core/country-list/datapackage.json'
->>> storage = datapackage.push_datapackage(data_url, 'pandas')
+# Save to Pandas
 
->>> storage.buckets
-['data___data']
+storage = Storage.connect('pandas')
+package = Package('http://data.okfn.org/data/core/country-list/datapackage.json')
+package.save(storage=storage)
 
->>> type(storage['data___data'])
-<class 'pandas.core.frame.DataFrame'>
+print(storage.buckets)
+#  ['data___data']
 
->>> storage['data___data'].head()
-             Name Code
-0     Afghanistan   AF
-1   Åland Islands   AX
-2         Albania   AL
-3         Algeria   DZ
-4  American Samoa   AS
-```
+print(type(storage['data']))
+#  <class 'pandas.core.frame.DataFrame'>
 
-Also it is possible to pull your existing data frame into a data package:
+print(storage['data'].head())
+#               Name   Code
+#  0     Afghanistan   AF
+#  1   Åland Islands   AX
+#  2         Albania   AL
+#  3         Algeria   DZ
+#  4  American Samoa   AS
 
-```python
->>> datapackage.pull_datapackage('/tmp/datapackage.json', 'country_list', 'pandas', tables={
-...     'data': storage['data___data'],
-... })
-Storage
+# Load from Pandas
+
+package = Package(storage=storage)
+print(package.descriptor)
+print(package.resources[0].read())
 ```
 
 ## Documentation

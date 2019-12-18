@@ -18,9 +18,9 @@ Generate and load Pandas data frames [Table Schema](http://specs.frictionlessdat
 
   - [Getting Started](#getting-started)
     - [Installation](#installation)
-    - [Example](#example)
   - [Documentation](#documentation)
-    - [Storage](#storage)
+  - [API Reference](#api-reference)
+    - [`Storage`](#storage)
   - [Contributing](#contributing)
   - [Changelog](#changelog)
 
@@ -36,23 +36,16 @@ The package use semantic versioning. It means that major versions  could include
 $ pip install tableschema-pandas
 ```
 
-### Example
-
-Code examples in this readme requires Python 3.3+ interpreter. You could see even more example in [examples](https://github.com/frictionlessdata/tableschema-pandas-py/tree/master/examples) directory.
+## Documentation
 
 ```python
 # pip install datapackage tableschema-pandas
-from tableschema import Storage
 from datapackage import Package
 
 # Save to Pandas
 
-storage = Storage.connect('pandas')
 package = Package('http://data.okfn.org/data/core/country-list/datapackage.json')
-package.save(storage=storage)
-
-print(storage.buckets)
-#  ['data___data']
+storage = package.save(storage='pandas')
 
 print(type(storage['data']))
 #  <class 'pandas.core.frame.DataFrame'>
@@ -72,31 +65,13 @@ print(package.descriptor)
 print(package.resources[0].read())
 ```
 
-## Documentation
-
-The whole public API of this package is described here and follows semantic versioning rules. Everyting outside of this readme are private API and could be changed without any notification on any new version.
-
-### Storage
-
-Package implements [Tabular Storage](https://github.com/frictionlessdata/tableschema-py#storage) interface (see full documentation on the link):
-
-![Storage](https://i.imgur.com/RQgrxqp.png)
-
-This driver provides an additional API:
-
-#### `Storage(dataframes=[])`
-
-- `dataframes (object[])` - list of storage dataframes
-
-We can get storage this way:
+Storage works as a container for Pandas data frames. You can define new data frame inside storage using `storage.create` method:
 
 ```python
 >>> from tableschema_pandas import Storage
 
 >>> storage = Storage()
 ```
-
-Storage works as a container for Pandas data frames. You can define new data frame inside storage using `storage.create` method:
 
 ```python
 >>> storage.create('data', {
@@ -140,14 +115,34 @@ id comment
 1     good
 ```
 
+## API Reference
+
+### `Storage`
+```python
+Storage(self, dataframes=None)
+```
+Pandas storage
+
+Package implements
+[Tabular Storage](https://github.com/frictionlessdata/tableschema-py#storage)
+interface (see full documentation on the link):
+
+![Storage](https://i.imgur.com/RQgrxqp.png)
+
+> Only additional API is documented
+
+__Arguments__
+- __dataframes (object[])__: list of storage dataframes
+
+
 ## Contributing
 
-The project follows the [Open Knowledge International coding standards](https://github.com/okfn/coding-standards).
+> The project follows the [Open Knowledge International coding standards](https://github.com/okfn/coding-standards).
 
 Recommended way to get started is to create and activate a project virtual environment.
 To install package and development dependencies into active environment:
 
-```
+```bash
 $ make install
 ```
 
@@ -156,29 +151,6 @@ To run tests with linting and coverage:
 ```bash
 $ make test
 ```
-
-For linting `pylama` configured in `pylama.ini` is used. On this stage it's already
-installed into your environment and could be used separately with more fine-grained control
-as described in documentation - https://pylama.readthedocs.io/en/latest/.
-
-For example to sort results by error type:
-
-```bash
-$ pylama --sort <path>
-```
-
-For testing `tox` configured in `tox.ini` is used.
-It's already installed into your environment and could be used separately with more fine-grained control as described in documentation - https://testrun.org/tox/latest/.
-
-For example to check subset of tests against Python 2 environment with increased verbosity.
-All positional arguments and options after `--` will be passed to `py.test`:
-
-```bash
-tox -e py27 -- -v tests/<path>
-```
-
-Under the hood `tox` uses `pytest` configured in `pytest.ini`, `coverage`
-and `mock` packages. This packages are available only in tox envionments.
 
 ## Changelog
 

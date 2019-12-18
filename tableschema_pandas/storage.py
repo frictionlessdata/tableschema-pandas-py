@@ -14,12 +14,24 @@ from .mapper import Mapper
 # Module API
 
 class Storage(tableschema.Storage):
+    """Pandas storage
+
+    Package implements
+    [Tabular Storage](https://github.com/frictionlessdata/tableschema-py#storage)
+    interface (see full documentation on the link):
+
+    ![Storage](https://i.imgur.com/RQgrxqp.png)
+
+    > Only additional API is documented
+
+    # Arguments
+        dataframes (object[]): list of storage dataframes
+
+    """
 
     # Public
 
     def __init__(self, dataframes=None):
-        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
-        """
 
         # Set attributes
         self.__dataframes = dataframes or collections.OrderedDict()
@@ -29,24 +41,22 @@ class Storage(tableschema.Storage):
         self.__mapper = Mapper()
 
     def __repr__(self):
-        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
-        """
         return 'Storage'
 
     def __getitem__(self, key):
-        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
+        """Returns Pandas dataframe
+
+        # Arguments
+            name (str): name
+
         """
         return self.__dataframes[key]
 
     @property
     def buckets(self):
-        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
-        """
         return list(sorted(self.__dataframes.keys()))
 
     def create(self, bucket, descriptor, force=False):
-        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
-        """
 
         # Make lists
         buckets = bucket
@@ -71,8 +81,6 @@ class Storage(tableschema.Storage):
             self.__dataframes[bucket] = pd.DataFrame()
 
     def delete(self, bucket=None, ignore=False):
-        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
-        """
 
         # Make lists
         buckets = bucket
@@ -100,8 +108,6 @@ class Storage(tableschema.Storage):
                 del self.__dataframes[bucket]
 
     def describe(self, bucket, descriptor=None):
-        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
-        """
 
         # Set descriptor
         if descriptor is not None:
@@ -117,8 +123,6 @@ class Storage(tableschema.Storage):
         return descriptor
 
     def iter(self, bucket):
-        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
-        """
 
         # Check existense
         if bucket not in self.buckets:
@@ -135,14 +139,10 @@ class Storage(tableschema.Storage):
             yield row
 
     def read(self, bucket):
-        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
-        """
         rows = list(self.iter(bucket))
         return rows
 
     def write(self, bucket, rows):
-        """https://github.com/frictionlessdata/tableschema-pandas-py#storage
-        """
 
         # Prepare
         descriptor = self.describe(bucket)
